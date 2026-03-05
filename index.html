@@ -583,7 +583,7 @@
             if (charts.branchBar) charts.branchBar.destroy();
             const branchStats = {};
             activeData.forEach(row => {
-                const b = row.Company || row.company || row['ชื่อซัพพลายเออร์'] || 'Unknown';
+                const b = row.Company || row.company || 'Unknown';
                 const val = (currentMetric === 'finance') ? (row._total || 0) : (row._qty || 0);
                 branchStats[b] = (branchStats[b] || 0) + val;
             });
@@ -612,5 +612,6 @@
     </script>
 </body>
 </html>
+
 
 
