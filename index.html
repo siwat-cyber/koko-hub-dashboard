@@ -209,6 +209,14 @@
                 </div>
             </div>
         </div>
+        <div class="premium-card p-8 rounded-[2.5rem] mt-8">
+                <h4 class="font-black text-white text-lg tracking-tight flex items-center gap-3 mb-8 uppercase">
+                    <i data-lucide="bar-chart"></i> Usage by Branch
+                </h4>
+                <div class="h-[400px] w-full">
+                    <canvas id="branchUsageChart"></canvas>
+                </div>
+            </div>
     </main>
 
     <script>
@@ -570,8 +578,38 @@
                 }
             });
         }
-
+// --- กราฟแยกสาขาแนวตั้ง ---
+            const branchCtx = document.getElementById('branchUsageChart');
+            if (charts.branchBar) charts.branchBar.destroy();
+            const branchStats = {};
+            activeData.forEach(row => {
+                const b = row._branch || 'Unknown';
+                const val = (currentMetric === 'finance') ? (row._total || 0) : (row._qty || 0);
+                branchStats[b] = (branchStats[b] || 0) + val;
+            });
+            const sortedBranches = Object.entries(branchStats).sort((a, b) => b[1] - a[1]);
+            charts.branchBar = new Chart(branchCtx, {
+                type: 'bar',
+                data: {
+                    labels: sortedBranches.map(d => d[0]),
+                    datasets: [{
+                        label: currentMetric === 'finance' ? 'Total (THB)' : 'Total (Qty)',
+                        data: sortedBranches.map(d => d[1]),
+                        backgroundColor: '#6366f1',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: '#64748b', font: { size: 10, family: 'Sarabun' } } },
+                        y: { beginAtZero: true, ticks: { color: '#64748b' } }
+                    }
+                }
+            });
         window.onload = () => lucide.createIcons();
     </script>
 </body>
 </html>
+
