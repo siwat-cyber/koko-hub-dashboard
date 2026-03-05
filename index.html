@@ -208,27 +208,25 @@
                     <canvas id="deliveryBarChart"></canvas>
                 </div>
             </div>
-        </div>
-        <div class="premium-card p-8 rounded-[2.5rem] mt-8">
+
+            <div class="premium-card p-8 rounded-[2.5rem]">
                 <h4 class="font-black text-white text-lg tracking-tight flex items-center gap-3 mb-8 uppercase">
-                    <i data-lucide="bar-chart"></i> Usage by Branch
+                    <i data-lucide="bar-chart" class="w-6 h-6 text-indigo-400"></i> Usage by Branch
                 </h4>
                 <div class="h-[400px] w-full">
                     <canvas id="branchUsageChart"></canvas>
                 </div>
             </div>
+        </div>
     </main>
 
     <script>
         let allData = [];
         let activeData = [];
         let currentMetric = 'finance'; 
-        let charts = { catPie: null, compPie: null, topBar: null, trendLine: null };
+        let charts = { catPie: null, compPie: null, topBar: null, trendLine: null, branchBar: null };
         let deliveryCharts = null;
 
-        /**
-         * CATEGORY RULES v8.2
-         */
         const categoryRules = [
             { 
                 name: "Frozen Food", 
@@ -394,13 +392,19 @@
             const compStats = {};
             const productStats = {};
             const monthlyStats = {};
+            const branchUsageStats = {}; // สำหรับกราฟแยกสาขา
 
             activeData.forEach(row => {
                 const valMetric = currentMetric === 'finance' ? row._total : row._qty;
                 const valQty = row._qty;
                 metricSum += valMetric;
+                
                 catStats[row._category] = (catStats[row._category] || 0) + valMetric;
                 compStats[row._branch] = (compStats[row._branch] || 0) + valMetric;
+                
+                // เก็บสถิติแยกสาขาสำหรับกราฟใหม่
+                branchUsageStats[row._branch] = (branchUsageStats[row._branch] || 0) + valMetric;
+
                 const p = row.Description || row.description || row.product || 'Unknown';
                 productStats[p] = (productStats[p] || 0) + valMetric;
                 
@@ -419,7 +423,39 @@
             renderPie('companyPieChart', 'compPie', compStats, ['#0ea5e9', '#f43f5e', '#10b981', '#fbbf24', '#a855f7', '#64748b', '#ec4899']);
             renderTop10Bar(productStats);
             renderTrendChart(monthlyStats);
+            
+            // วาดกราฟ Usage by Branch
+            renderBranchUsageChart(branchUsageStats);
+            
             lucide.createIcons();
+        }
+
+        function renderBranchUsageChart(stats) {
+            const ctx = document.getElementById('branchUsageChart');
+            if (charts.branchBar) charts.branchBar.destroy();
+            
+            const sortedData = Object.entries(stats).sort((a, b) => b[1] - a[1]);
+            
+            charts.branchBar = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedData.map(d => d[0]),
+                    datasets: [{
+                        label: currentMetric === 'finance' ? 'Total (THB)' : 'Total (Qty)',
+                        data: sortedData.map(d => d[1]),
+                        backgroundColor: '#6366f1',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: '#64748b', font: { size: 10, family: 'Sarabun' } } },
+                        y: { beginAtZero: true, ticks: { color: '#64748b' } }
+                    }
+                }
+            });
         }
 
         function renderPie(canvasId, chartKey, stats, colors) {
@@ -489,7 +525,6 @@
                         backgroundColor: 'rgba(99, 102, 241, 0.8)',
                         hoverBackgroundColor: '#6366f1',
                         borderRadius: 6,
-                        borderWidth: 0,
                         barThickness: 'flex',
                         maxBarThickness: 50
                     }]
@@ -497,29 +532,11 @@
                 options: {
                     maintainAspectRatio: false,
                     plugins: { 
-                        legend: { 
-                            display: true, 
-                            labels: { color: '#94a3b8', font: { family: 'Sarabun', size: 12 } } 
-                        },
-                        tooltip: {
-                            backgroundColor: '#1e293b',
-                            titleFont: { family: 'Sarabun' },
-                            bodyFont: { family: 'Sarabun' },
-                            padding: 12,
-                            cornerRadius: 8,
-                            displayColors: false
-                        }
+                        legend: { display: true, labels: { color: '#94a3b8', font: { family: 'Sarabun', size: 12 } } }
                     },
                     scales: {
-                        x: { 
-                            grid: { display: false }, 
-                            ticks: { color: '#64748b', font: { family: 'Sarabun' } } 
-                        },
-                        y: { 
-                            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false }, 
-                            ticks: { color: '#64748b', font: { family: 'Sarabun' } },
-                            beginAtZero: true
-                        }
+                        x: { grid: { display: false }, ticks: { color: '#64748b', font: { family: 'Sarabun' } } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { family: 'Sarabun' } }, beginAtZero: true }
                     }
                 }
             });
@@ -569,49 +586,13 @@
                     },
                     scales: {
                         x: { grid: { display: false }, ticks: { color: '#64748b', font: { family: 'Sarabun' } } },
-                        y: { 
-                            grid: { color: 'rgba(255,255,255,0.05)' }, 
-                            ticks: { color: '#64748b', font: { family: 'Sarabun' } },
-                            beginAtZero: true
-                        }
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { family: 'Sarabun' } }, beginAtZero: true }
                     }
                 }
             });
         }
-// --- กราฟแยกสาขาแนวตั้ง ---
-            const branchCtx = document.getElementById('branchUsageChart');
-            if (charts.branchBar) charts.branchBar.destroy();
-            const branchStats = {};
-            activeData.forEach(row => {
-                const b = row.Company || row.company || 'Unknown';
-                const val = (currentMetric === 'finance') ? (row._total || 0) : (row._qty || 0);
-                branchStats[b] = (branchStats[b] || 0) + val;
-            });
-            const sortedBranches = Object.entries(branchStats).sort((a, b) => b[1] - a[1]);
-            charts.branchBar = new Chart(branchCtx, {
-                type: 'bar',
-                data: {
-                    labels: sortedBranches.map(d => d[0]),
-                    datasets: [{
-                        label: currentMetric === 'finance' ? 'Total (THB)' : 'Total (Qty)',
-                        data: sortedBranches.map(d => d[1]),
-                        backgroundColor: '#6366f1',
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { ticks: { color: '#64748b', font: { size: 10, family: 'Sarabun' } } },
-                        y: { beginAtZero: true, ticks: { color: '#64748b' } }
-                    }
-                }
-            });
+
         window.onload = () => lucide.createIcons();
     </script>
 </body>
 </html>
-
-
-
