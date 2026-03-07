@@ -264,11 +264,6 @@ const masterData2026 = {
     "Sponge : Green Yellow (3x4in) 1 each": "Cleaning Supply",
     "Bag Garbage : Black Recycle Roll (18x20in) 1 each": "Cleaning Supply",
 
-    // --- Stationary ---
-    "Copy Paper : A4 80gsm White 500 sheet ream": "Stationary",
-    "Paper Roll : Thermal (80x80mm) 1 each roll": "Stationary",
-    "Battery : AA 1.5V Alkaline 1 each": "Stationary",
-    "Double Clip : Black (50mm) 12 each box": "Stationary",
 
     // --- Take Away ---
    "Cup : Paper Double Walled White No Logo (8oz) 1 each": "Take Away",
@@ -505,7 +500,7 @@ const masterData2026 = {
             "Chicken Breast : Smoked 1 kg": "Frozen Food",
             "Daifuku : Matcha 35 g": "Frozen Food",
 
-    / --- หมวด Stationary (จากภาพ image_44013b, 4400ff) ---
+    / ---  Stationary ---
             "Cutter": "Stationary",
             "Eraser : {Zeh03}": "Stationary",
             "Cutter Blades : 45 Degrees (18mm / Size L) 1 each": "Stationary",
@@ -621,49 +616,105 @@ function getCategory(description) {
             return null;
         }
 
-       // แก้ไขส่วน .map(row => { ... }) ใน handleFileUpload
-allData = results.data.filter(row => Object.values(row).some(v => v)).map(row => {
-    
-    // --- 1. ดึงข้อมูลพื้นฐานจาก CSV ---
-    const dateStr = row['Invoice Date'] || row['Exp/ Date'] || row['วันที่'] || row['Date'] || '';
-    const dateObj = parseDate(dateStr);
-    
-    // ชื่อสินค้าจากไฟล์ CSV (หัวใจสำคัญ)
-    const itemNameFromCSV = (row['Description'] || row['description'] || row['รายการ'] || row['Item Name'] || '').trim();
-    
-    const branch = row['Company'] || row['company'] || row['ชื่อซัพพลายเออร์'] || 'Unknown';
-    const cleanNum = (val) => String(val || '0').replace(/[", ]/g, '');
-    const total = parseFloat(cleanNum(row['Total'] || row['total'] || row['ยอดรวม'] || '0')) || 0;
-    const qty = parseFloat(cleanNum(row['Qty'] || row['qty'] || row['จำนวน'] || '0')) || 0;
+       // ==========================================
+// 1. ฟังก์ชันหลักสำหรับอัปโหลดและประมวลผลไฟล์ CSV
+// ==========================================
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-    // --- 2. ระบบการกรองละเอียด (Double Check Logic) ---
-    let finalCategory = "3rd Party"; // ค่าเริ่มต้น
+    // แสดงสถานะการโหลด
+    const statusBadge = document.getElementById('statusBadge');
+    if (statusBadge) statusBadge.classList.remove('hidden');
 
-    // ขั้นที่ 1: เทียบชื่อตรงๆ กับ Master Data ที่คุณเพิ่มเอง
-    if (masterData2026[itemNameFromCSV]) {
-        finalCategory = masterData2026[itemNameFromCSV];
-    } 
-    // ขั้นที่ 2: ถ้าไม่เจอชื่อตรงเป๊ะ ให้ใช้ระบบ "เดา" จาก Keywords
-    else {
-        const lowerItem = itemNameFromCSV.toLowerCase();
-        for (const rule of categoryRules) {
-            // ถ้าในชื่อสินค้ามีคำสำคัญคำใดคำหนึ่งในหมวดนั้น ให้จัดเข้าหมวดนั้นเลย
-            if (rule.keywords.some(k => lowerItem.includes(k.toLowerCase()))) {
-                finalCategory = rule.name;
-                break; // เจอหมวดที่ใช่แล้วให้หยุดหาต่อ
-            }
+    Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            const branches = new Set();
+            let minDate = null, maxDate = null;
+
+            // ประมวลผลข้อมูลทีละแถว
+            allData = results.data.filter(row => Object.values(row).some(v => v)).map(row => {
+                
+                // --- A. ดึงวันที่ (รองรับหัวตารางหลายแบบ) ---
+                const dateStr = row['Invoice Date'] || row['Exp/ Date'] || row['วันที่'] || row['Date'] || '';
+                const dateObj = parseDate(dateStr);
+
+                // --- B. ดึงชื่อสินค้า (หัวใจสำคัญสำหรับการจัดหมวด) ---
+                const itemNameFromCSV = (row['Description'] || row['description'] || row['รายการ'] || row['Item Name'] || row['Product'] || '').trim();
+
+                // --- C. ดึงสาขาและข้อมูลตัวเลข (ลบคอมม่าออก) ---
+                const branch = row['Company'] || row['company'] || row['ชื่อซัพพลายเออร์'] || row['Branch'] || 'Unknown';
+                const cleanNum = (val) => String(val || '0').replace(/[", ]/g, '');
+                const total = parseFloat(cleanNum(row['Total'] || row['total'] || row['ยอดรวม'] || row['Amount'])) || 0;
+                const qty = parseFloat(cleanNum(row['Qty'] || row['qty'] || row['จำนวน'] || row['Quantity'])) || 0;
+
+                // อัปเดตช่วงวันที่และรายชื่อสาขา
+                if (dateObj && !isNaN(dateObj.getTime())) {
+                    if (!minDate || dateObj < minDate) minDate = dateObj;
+                    if (!maxDate || dateObj > maxDate) maxDate = dateObj;
+                }
+                branches.add(branch);
+
+                // --- D. ระบบจัดหมวดหมู่แบบละเอียด (Double Check Logic) ---
+                let finalCategory = "3rd Party"; // ค่าเริ่มต้นหากไม่พบหมวด
+
+                // ชั้นที่ 1: ตรวจสอบชื่อตรงเป๊ะจาก Master Data ที่คุณพิมพ์เอง
+                if (masterData2026 && masterData2026[itemNameFromCSV]) {
+                    finalCategory = masterData2026[itemNameFromCSV];
+                } 
+                // ชั้นที่ 2: หากไม่ตรงเป๊ะ ให้ระบบ "เดา" จาก Keywords ใน categoryRules
+                else if (typeof categoryRules !== 'undefined') {
+                    const lowerItem = itemNameFromCSV.toLowerCase();
+                    for (const rule of categoryRules) {
+                        if (rule.keywords.some(k => lowerItem.includes(k.toLowerCase()))) {
+                            finalCategory = rule.name;
+                            break; 
+                        }
+                    }
+                }
+
+                return { 
+                    ...row, 
+                    _dateObj: dateObj, 
+                    _category: finalCategory, 
+                    _branch: branch, 
+                    _total: total, 
+                    _qty: qty 
+                };
+            });
+
+            // อัปเดตค่าวันที่ในหน้า UI
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            if (minDate && startDateInput) startDateInput.value = minDate.toISOString().split('T')[0];
+            if (maxDate && endDateInput) endDateInput.value = maxDate.toISOString().split('T')[0];
+            
+            // สั่งอัปเดต Dropdown และวาดกราฟใหม่
+            if (typeof updateBranchList === 'function') updateBranchList(Array.from(branches));
+            if (typeof applyFilters === 'function') applyFilters();
         }
-    }
+    });
+}
 
-    return { 
-        ...row, 
-        _dateObj: dateObj, 
-        _category: finalCategory, 
-        _branch: branch, 
-        _total: total, 
-        _qty: qty 
-    };
-});
+// ==========================================
+// 2. ฟังก์ชันเสริมสำหรับการทำงาน (ควรมีไว้คู่กัน)
+// ==========================================
+function parseDate(str) {
+    if (!str) return null;
+    const cleanStr = String(str).trim();
+    const parts = cleanStr.split(/[-/ ]/);
+    if (parts.length >= 3) {
+        let d = parseInt(parts[0]);
+        let m = isNaN(parts[1]) ? new Date(parts[1] + " 1, 2020").getMonth() : parseInt(parts[1]) - 1;
+        let y = parseInt(parts[2]);
+        if (y < 100) y += 2000;
+        if (y > 2500) y -= 543; // แปลง พ.ศ. เป็น ค.ศ.
+        return new Date(y, m, d);
+    }
+    return new Date(cleanStr);
+}
 
         function updateBranchList(branches) {
             const select = document.getElementById('filterBranch');
@@ -923,6 +974,7 @@ allData = results.data.filter(row => Object.values(row).some(v => v)).map(row =>
     </script>
 </body>
 </html>
+
 
 
 
