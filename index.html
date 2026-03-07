@@ -28,6 +28,7 @@
         .sidebar-scroll { height: calc(100vh - 120px); overflow-y: auto; scrollbar-width: thin; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 
         select, input { 
@@ -107,7 +108,7 @@
                         <option value="Dry & Liquid Amenity">Dry & Liquid Amenity</option>
                         <option value="Uniform">Uniform</option>
                         <option value="Boutique shop/Merchandise">Boutique/Merchandise</option>
-                        <option value="Others">Others</option>
+                        <option value="3rd Party">3rd Party</option>
                     </select>
                 </div>
 
@@ -227,95 +228,67 @@
         let charts = { catPie: null, compPie: null, topBar: null, trendLine: null, branchBar: null };
         let deliveryCharts = null;
 
-       // 1. ฐานข้อมูล Master Data (สกัดจากไฟล์ catagory2026.xlsx)
-const masterData2026 = {
-    "Meat Ball : With Tomato Sauce 1 kg pack": "Frozen Food",
-    "Oyako Don : (110g) {K-20030406 } 20 each pack": "Frozen Food",
-    "Curry Massaman : Chicken Frozen 1 kg": "Frozen Food",
-    "Spaghetti Noodle : Boil 54 each pack": "Frozen Food",
-    "Shower Cap : Cornstarch (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
-    "Toilet Tissue : White 2 Ply 14 m roll": "Cleaning Supply",
-    "Hand Towel M-Fold : 1 Ply Airflex (24x23cm) 250 sheet": "Cleaning Supply",
-    "Dental Kits : Wheatstraw Toothbrush + (3g) Kraft Toothpaste (17cm) (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
-    "Tomato Ketchup 300 ml bottle": "Dry Food",
-    "Oil Palm 18 lt": "Dry Food",
-    "Copy Paper : A4 80gsm White": "Stationary",
-    "Sanitary Bag : Without Logo Without Packaging Generic Bag White": "Dry & Liquid Amenity"
-    // (ระบบจะรองรับการเพิ่มรายการอื่นๆ ได้ไม่จำกัด)
-};
+        // 1. ฐานข้อมูล Master Data (สกัดจากไฟล์ catagory2026.xlsx)
+        const masterData2026 = {
+            "Meat Ball : With Tomato Sauce 1 kg pack": "Frozen Food",
+            "Oyako Don : (110g) {K-20030406 } 20 each pack": "Frozen Food",
+            "Curry Massaman : Chicken Frozen 1 kg": "Frozen Food",
+            "Spaghetti Noodle : Boil 54 each pack": "Frozen Food",
+            "Shower Cap : Cornstarch (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
+            "Toilet Tissue : White 2 Ply 14 m roll": "Cleaning Supply",
+            "Hand Towel M-Fold : 1 Ply Airflex (24x23cm) 250 sheet": "Cleaning Supply",
+            "Dental Kits : Wheatstraw Toothbrush + (3g) Kraft Toothpaste (17cm) (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
+            "Tomato Ketchup 300 ml bottle": "Dry Food",
+            "Oil Palm 18 lt": "Dry Food",
+            "Copy Paper : A4 80gsm White": "Stationary",
+            "Sanitary Bag : Without Logo Without Packaging Generic Bag White": "Dry & Liquid Amenity"
+        };
 
-// 2. กฎการกรองด้วย Keyword (สำหรับสินค้าที่ไม่มีใน Master Data)
-const categoryRules = [
-    { 
-        name: "Dry & Liquid Amenity", 
-        keywords: ["shower cap", "dental kit", "toothbrush", "shampoo", "soap bar", "amenity", "slippers"] 
-    },
-    { 
-        name: "Cleaning Supply", 
-        keywords: ["tissue", "toilet paper", "hand towel", "m-fold", "garbage bag", "cleaner", "haiter", "detergent"] 
-    },
-    { 
-        name: "Frozen Food", 
-        keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti"] 
-    },
-    { 
-        name: "Dry Food", 
-        keywords: ["mama", "instant noodle", "shoyu", "oil", "rice", "salt", "sugar", "sauce", "ketchup"] 
-    },
-    { 
-        name: "Stationary", 
-        keywords: ["paper a4", "pen", "pencil", "stapler", "tape", "folder"] 
-    }
-];
-
-// 3. ฟังก์ชันการกรองระดับ Ultimate
-function getCategory(description) {
-    if (!description) return "3rd Party";
-    
-    const fullDesc = description.trim();
-    const lowerDesc = fullDesc.toLowerCase();
-
-    // --- STEP 1: เช็คชื่อเต็ม (Exact Match) ---
-    if (masterData2026[fullDesc]) {
-        return masterData2026[fullDesc];
-    }
-
-    // --- STEP 2: เช็ค Keyword (Priority Logic) ---
-    for (const rule of categoryRules) {
-        if (rule.keywords.some(k => lowerDesc.includes(k.toLowerCase()))) {
-            return rule.name;
-        }
-    }
-
-    // --- STEP 3: ถ้าไม่เจอเลย ให้เป็น 3rd Party ---
-    return "3rd Party";
-}
-// ฟังก์ชันดึงหมวดหมู่ที่ใช้ระบบ Priority
-function getCategory(description) {
-    if (!description) return "Others";
-    const desc = description.toLowerCase();
-
-    // วนเช็คตามลำดับความสำคัญ (ยึดตามหมวดหมู่ในไฟล์ catagory2026)
-    for (const rule of categoryRules) {
-        if (rule.keywords.some(k => desc.includes(k.toLowerCase()))) {
-            return rule.name;
-        }
-    }
-    return "Others";
-}
-
-        function getCategory(description) {
-            if (!description) return "Others";
-            const desc = description.toLowerCase();
-            const frozenKeywords = categoryRules.find(r => r.name === "Frozen Food").keywords;
-            if (frozenKeywords.some(k => desc.includes(k.toLowerCase()))) return "Frozen Food";
-            const dryKeywords = categoryRules.find(r => r.name === "Dry Food").keywords;
-            if (dryKeywords.some(k => desc.includes(k.toLowerCase()))) return "Dry Food";
-            for (const rule of categoryRules) {
-                if (rule.name === "Frozen Food" || rule.name === "Dry Food") continue;
-                if (rule.keywords.some(k => desc.includes(k.toLowerCase()))) return rule.name;
+        // 2. กฎการกรองด้วย Keyword (สำหรับสินค้าที่ไม่มีใน Master Data)
+        const categoryRules = [
+            { 
+                name: "Dry & Liquid Amenity", 
+                keywords: ["shower cap", "dental kit", "toothbrush", "shampoo", "soap", "amenity", "slippers"] 
+            },
+            { 
+                name: "Cleaning Supply", 
+                keywords: ["tissue", "toilet paper", "hand towel", "m-fold", "garbage bag", "cleaner", "haiter"] 
+            },
+            { 
+                name: "Frozen Food", 
+                keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti"] 
+            },
+            { 
+                name: "Dry Food", 
+                keywords: ["mama", "instant noodle", "shoyu", "oil", "rice", "salt", "sugar", "sauce", "ketchup"] 
+            },
+            { 
+                name: "Stationary", 
+                keywords: ["paper a4", "pen", "pencil", "stapler", "tape", "folder"] 
             }
-            return "Others";
+        ];
+
+        // 3. ฟังก์ชันการกรองระดับ Ultimate (แก้ไขใหม่ให้เช็คชื่อเต็มก่อน)
+        function getCategory(description) {
+            if (!description) return "3rd Party";
+            
+            const fullDesc = description.trim();
+            const lowerDesc = fullDesc.toLowerCase();
+
+            // --- STEP 1: เช็คชื่อเต็ม (Exact Match) ---
+            if (masterData2026[fullDesc]) {
+                return masterData2026[fullDesc];
+            }
+
+            // --- STEP 2: เช็ค Keyword ---
+            for (const rule of categoryRules) {
+                if (rule.keywords.some(k => lowerDesc.includes(k.toLowerCase()))) {
+                    return rule.name;
+                }
+            }
+
+            // --- STEP 3: ถ้าไม่เจอเลย ให้เป็น 3rd Party ---
+            return "3rd Party";
         }
 
         function parseDate(str) {
@@ -424,7 +397,7 @@ function getCategory(description) {
             const compStats = {};
             const productStats = {};
             const monthlyStats = {};
-            const branchUsageStats = {}; // สำหรับกราฟแยกสาขา
+            const branchUsageStats = {}; 
 
             activeData.forEach(row => {
                 const valMetric = currentMetric === 'finance' ? row._total : row._qty;
@@ -434,7 +407,6 @@ function getCategory(description) {
                 catStats[row._category] = (catStats[row._category] || 0) + valMetric;
                 compStats[row._branch] = (compStats[row._branch] || 0) + valMetric;
                 
-                // เก็บสถิติแยกสาขาสำหรับกราฟใหม่
                 branchUsageStats[row._branch] = (branchUsageStats[row._branch] || 0) + valMetric;
 
                 const p = row.Description || row.description || row.product || 'Unknown';
@@ -456,7 +428,6 @@ function getCategory(description) {
             renderTop10Bar(productStats);
             renderTrendChart(monthlyStats);
             
-            // วาดกราฟ Usage by Branch
             renderBranchUsageChart(branchUsageStats);
             
             lucide.createIcons();
@@ -628,7 +599,3 @@ function getCategory(description) {
     </script>
 </body>
 </html>
-
-
-
-
