@@ -108,6 +108,8 @@
                         <option value="Uniform">Uniform</option>
                         <option value="Boutique shop/Merchandise">Boutique/Merchandise</option>
                         <option value="Stationary">Stationary</option>
+                        <option value="Amenity special & Snack Harvest">Amenity special & Snack Harvest</option>
+                         <option value="Printing & Signage">Printing & Signage</option>
                         <option value="Others">Others</option>
                     </select>
                 </div>
@@ -231,8 +233,16 @@
         // 1. กฎการกรองด้วย Keyword (Priority Logic)
 const categoryRules = [
     { 
+       name: "Printing & Signage", 
+        keywords: ["keycard","DND", "sign","lugg"] 
+    }, 
+    { 
+       name: "Amenity special & Snack Harvest", 
+        keywords: ["pipo","yupi", "biscuit","candy"] 
+    },
+    { 
        name: "Boutique shop/Merchandise", 
-        keywords: ["kokopant", "cap", "T-Shirt : Cotton 100% ", "bag", "souvenir","pillow","Doll","Coin Case ","Polo Shirt 1 Logo","Roll up"] 
+        keywords: ["koko pants", "cap", "T-Shirt : Cotton 100% ", "bag", "souvenir","pillow","Doll","Coin Case ","Polo Shirt 1 Logo","Roll up"] 
     },
     { 
         name: "Uniform",
@@ -249,11 +259,11 @@ const categoryRules = [
     { 
         name: "Frozen Food", 
         keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti", "Scram", "eeg","Curry","Chicken","Ssausage","folies","Sweet Chikuzen","Potato","cinnamon","banana",
-        "cheese","banana Muffin","tamago","nameko","Donut","fried","bamboo"] 
+        "cheese","banana Muffin","tamago","nameko","Donut","fried","bamboo","thaifuku","jellyfish","takana"] 
     },
     { 
         name: "Dry Food", 
-        keywords: ["mama", "instant noodle", "shoyu", "oil", "rice", "salt", "sugar", "sauce", "ketchup","Kewpie","Boncafe" ,"Ito En","juice","Kelloggs","Nutella","Honey"] 
+        keywords: ["mama", "instant noodle", "shoyu", "oil", "rice", "salt", "sugar", "sauce", "ketchup","Kewpie","Boncafe" ,"Ito En","juice","Kelloggs","Nutella","Honey","milo"] 
     },
     { 
         name: "Stationary", 
@@ -587,6 +597,7 @@ function getCategory(description) {
     </script>
 </body>
 </html>
+
 
 
 
