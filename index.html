@@ -231,12 +231,16 @@
         // 1. กฎการกรองด้วย Keyword (Priority Logic)
 const categoryRules = [
     { 
-        name: "Uniform", 
+       name: "Boutique shop/Merchandise", 
+        keywords: ["koko", "pant", "cap", "T-Shirt : Cotton 100% ", "bag", "souvenir","pillow","Doll","Coin Case ","Polo Shirt 1 Logo"] 
+    },
+    { 
+        name: "Uniform",
         keywords: ["polo", "shirt", "t-shirt", "jacket", "apron", "trousers", "uniform"] 
     },
     { 
         name: "Dry & Liquid Amenity", 
-        keywords: ["shower cap", "dental kit", "toothbrush", "shampoo", "soap bar", "amenity", "slippers"] 
+        keywords: ["shower cap", "dental kit", "toothbrush", "shampoo", "soap bar", "amenity", "slipper"] 
     },
     { 
         name: "Cleaning Supply", 
@@ -244,11 +248,11 @@ const categoryRules = [
     },
     { 
         name: "Frozen Food", 
-        keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti", "Scram", "eeg","Curry"] 
+        keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti", "Scram", "eeg","Curry","Chicken","Ssausage"] 
     },
     { 
         name: "Dry Food", 
-        keywords: ["mama", "instant noodle", "shoyu", "oil", "rice", "salt", "sugar", "sauce", "ketchup","Kewpie"] 
+        keywords: ["mama", "instant noodle", "shoyu", "oil", "rice", "salt", "sugar", "sauce", "ketchup","Kewpie","Boancafe" ,"greentea"] 
     },
     { 
         name: "Stationary", 
@@ -582,6 +586,7 @@ function getCategory(description) {
     </script>
 </body>
 </html>
+
 
 
 
