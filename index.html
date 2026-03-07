@@ -103,8 +103,10 @@
                         <option value="all">-- ทุกหมวดหมู่ --</option>
                         <option value="Dry Food">Dry Food</option>
                         <option value="Frozen Food">Frozen Food</option>
+                        <option value="Kitchen Supply">Kitchen Supply</option>
                         <option value="Cleaning Supply">Cleaning Supply</option>
                         <option value="Dry & Liquid Amenity">Dry & Liquid Amenity</option>
+                        <option value="Guest Supplies set in Room">Guest Supplies set in Room</option>
                         <option value="Uniform">Uniform</option>
                         <option value="Boutique shop/Merchandise">Boutique/Merchandise</option>
                         <option value="Stationary">Stationary</option>
@@ -244,7 +246,16 @@ const categoryRules = [
         keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti", "Scram", "eeg","Curry","Chicken","Ssausage","folies","Sweet Chikuzen","Potato","cinnamon","banana",
         "cheese","banana Muffin","tamago","nameko","Donut","fried","bamboo","thaifuku","jellyfish","takana","tonkatsu","bread pizza"] 
     },
-    
+     { 
+       name: "Kitchen Supply", 
+        keywords: ["pizza box", "wrapping film", "napkin", "gloves", "plate", "fork", "spoon", 
+        "bingsu", "straw", "dish", "bowl", "glass", "tray", "plastic bag", "porcelain", 
+        "ceramic", "ladle", "toothpick","gloves","porcelain","white ware","plastic",] 
+    }, 
+    { 
+       name: "Guest Supplies set in Room", 
+        keywords: ["kokotel mug","Umbrella","tray","ribbon","bow"] 
+    }, 
     { 
        name: "Take Away", 
         keywords: ["cup", "lid", "sauce cup", "chopsticks", "food box", "bowl", "take away","glass : pet"] 
@@ -259,7 +270,7 @@ const categoryRules = [
     },
     { 
        name: "Boutique shop/Merchandise", 
-        keywords: ["koko pants", "cap", "T-Shirt : Cotton 100% ", "bag", "souvenir","pillow","Doll","Coin Case ","Polo Shirt 1 Logo","Roll up","kokotel mug"] 
+        keywords: ["koko pants", "cap", "T-Shirt : Cotton 100% ", "bag", "souvenir","pillow","Doll","Coin Case ","Polo Shirt 1 Logo","Roll up"] 
     },
     { 
         name: "Uniform",
@@ -277,7 +288,7 @@ const categoryRules = [
        name: "3rd Party", 
         keywords: ["farmhouse", "milk", "carbonated beverages", "biscuits", 
             "breakfast cereals and health bars", "yoghurt", "wiwi", 
-            "mama", "fruit", "vegetables", "ice cream sorbet and frozen yoghurt", "coffee","Sport and Energy Drinks"] 
+            "mama", "fruit", "vegetables", "ice cream sorbet and frozen yoghurt", "coffee","Sport and Energy Drinks,","beer","Orange","root"] 
     }, 
     { 
         name: "Stationary", 
@@ -611,6 +622,7 @@ function getCategory(description) {
     </script>
 </body>
 </html>
+
 
 
 
