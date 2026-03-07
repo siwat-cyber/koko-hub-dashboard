@@ -3,219 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KOKO HUB Intelligence - Category Mapping Update</title>
+    <title>KOKO HUB Intelligence - 2026 Ultimate Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
-        
-        :root {
-            --bg-main: #0f172a;
-            --bg-card: #1e293b;
-            --accent: #6366f1;
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
-        }
-
-        body { 
-            font-family: 'Sarabun', sans-serif; 
-            background-color: var(--bg-main); 
-            color: var(--text-main); 
-        }
-
-        .sidebar-scroll { height: calc(100vh - 120px); overflow-y: auto; scrollbar-width: thin; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
+        :root { --bg-main: #0f172a; --bg-card: #1e293b; --accent: #6366f1; }
+        body { font-family: 'Sarabun', sans-serif; background-color: var(--bg-main); color: #f8fafc; margin: 0; }
+        .sidebar-scroll { height: calc(100vh - 120px); overflow-y: auto; }
+        .premium-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.3s ease; }
+        .premium-card:hover { border-color: rgba(99, 102, 241, 0.4); }
+        ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-
-        select, input { 
-            border: 1px solid #334155 !important; 
-            background-color: #0f172a !important; 
-            color: #f8fafc !important; 
-        }
-        
-        select:focus, input:focus {
-            border-color: #6366f1 !important;
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-        }
-
-        .premium-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .metric-tab.active {
-            background-color: #6366f1;
-            color: white;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col md:flex-row">
 
-    <aside class="w-full md:w-80 bg-[#070b14] text-slate-200 flex-shrink-0 flex flex-col h-screen sticky top-0 z-20 shadow-2xl border-r border-white/5">
+    <aside class="w-full md:w-80 bg-[#070b14] flex-shrink-0 flex flex-col h-screen sticky top-0 z-20 border-r border-white/5">
         <div class="p-6 border-b border-white/5 flex items-center gap-3">
-            <div class="bg-indigo-600 p-2 rounded-xl">
-                <i data-lucide="layout-dashboard" class="w-6 h-6 text-white"></i>
-            </div>
-            <h1 class="text-xl font-bold tracking-tight text-white uppercase">KOKO HUB <span class="text-indigo-500 text-sm">v.8.2</span></h1>
+            <div class="bg-indigo-600 p-2 rounded-xl"><i data-lucide="layout-dashboard" class="w-6 h-6 text-white"></i></div>
+            <h1 class="text-xl font-bold tracking-tight text-white uppercase">KOKO HUB <span class="text-indigo-500 text-sm">v.2026</span></h1>
         </div>
 
         <div class="p-6 sidebar-scroll space-y-6">
             <div>
-                <label for="csvFileInput" class="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-slate-800 rounded-2xl cursor-pointer hover:border-indigo-500 hover:bg-indigo-500/5 transition-all group">
+                <label for="csvFileInput" class="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-slate-800 rounded-2xl cursor-pointer hover:border-indigo-500 hover:bg-indigo-500/5 transition-all group">
                     <i data-lucide="upload-cloud" class="w-8 h-8 mb-2 text-slate-500 group-hover:text-indigo-400"></i>
                     <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-white text-center">อัปโหลดไฟล์ PO (CSV)</span>
                     <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleFileUpload(event)">
                 </label>
             </div>
 
-            <div class="pt-2 border-t border-white/5">
-                <label for="deliveryFileInput" class="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-emerald-800 rounded-2xl cursor-pointer hover:border-emerald-500 hover:bg-emerald-500/5 transition-all group">
-                    <i data-lucide="truck" class="w-8 h-8 mb-2 text-slate-500 group-hover:text-emerald-400"></i>
-                    <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-white text-center">อัปโหลดไฟล์ Delivery (CSV)</span>
-                    <input type="file" id="deliveryFileInput" accept=".csv" class="hidden" onchange="handleDeliveryUpload(event)">
-                </label>
-            </div>
-
-            <div class="space-y-6 pt-2 border-t border-white/5">
-                <div class="space-y-3">
-                    <label class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block">ช่วงวันที่</label>
-                    <div class="grid grid-cols-1 gap-2">
-                        <input type="date" id="startDate" onchange="applyFilters()" class="w-full p-2.5 rounded-xl text-xs outline-none">
-                        <input type="date" id="endDate" onchange="applyFilters()" class="w-full p-2.5 rounded-xl text-xs outline-none">
-                    </div>
-                </div>
-
+            <div class="space-y-4 pt-4 border-t border-white/5">
                 <div>
-                    <label class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 block">บริษัท / สาขา</label>
-                    <select id="filterBranch" onchange="applyFilters()" class="w-full p-3 rounded-xl text-xs outline-none appearance-none cursor-pointer">
+                    <label class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 block">เลือกสาขา/บริษัท</label>
+                    <select id="filterBranch" onchange="applyFilters()" class="w-full p-3 rounded-xl text-xs bg-[#0f172a] border border-slate-800 text-white outline-none appearance-none">
                         <option value="all">-- ทุกสาขา --</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 block">หมวดหมู่</label>
-                    <select id="filterCategory" onchange="applyFilters()" class="w-full p-3 rounded-xl text-xs outline-none appearance-none cursor-pointer">
+                    <label class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 block">หมวดหมู่สินค้า</label>
+                    <select id="filterCategory" onchange="applyFilters()" class="w-full p-3 rounded-xl text-xs bg-[#0f172a] border border-slate-800 text-white outline-none appearance-none">
                         <option value="all">-- ทุกหมวดหมู่ --</option>
-                        <option value="Dry Food">Dry Food</option>
                         <option value="Frozen Food">Frozen Food</option>
+                        <option value="Dry Food">Dry Food</option>
                         <option value="Cleaning Supply">Cleaning Supply</option>
                         <option value="Dry & Liquid Amenity">Dry & Liquid Amenity</option>
-                        <option value="Uniform">Uniform</option>
-                        <option value="Boutique shop/Merchandise">Boutique/Merchandise</option>
-                        <option value="Others">Others</option>
+                        <option value="Kitchen Supply">Kitchen Supply</option>
+                        <option value="Stationary">Stationary</option>
+                        <option value="Printing & Signage">Printing & Signage</option>
+                        <option value="3rd Party">3rd Party (นอกรายการ)</option>
                     </select>
                 </div>
-
-                <div>
-                    <label class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 block">ค้นหา (แยกหลายคำด้วย ,)</label>
-                    <div class="relative">
-                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-500"></i>
-                        <input type="text" id="searchTerm" placeholder="เช่น shrimp, salmon" oninput="applyFilters()" class="w-full pl-10 pr-4 py-2.5 rounded-xl text-xs outline-none">
-                    </div>
-                </div>
-
-                <button onclick="resetFilters()" class="w-full py-3 text-[10px] font-bold text-slate-400 hover:text-white border border-slate-800 rounded-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2 uppercase tracking-widest">
-                    <i data-lucide="rotate-ccw" class="w-3 h-3"></i> ล้างตัวกรอง
+                
+                <button onclick="window.location.reload()" class="w-full py-3 text-[10px] font-bold text-slate-400 border border-slate-800 rounded-xl hover:bg-slate-800 uppercase tracking-widest flex items-center justify-center gap-2">
+                    <i data-lucide="rotate-ccw" class="w-3 h-3"></i> รีเซ็ตข้อมูล
                 </button>
             </div>
         </div>
     </aside>
 
-    <main class="flex-1 overflow-y-auto">
+    <main class="flex-1 overflow-y-auto bg-[#0f172a]">
         <header class="bg-[#0f172a]/80 backdrop-blur-md border-b border-white/5 px-8 py-6 flex justify-between items-center sticky top-0 z-10">
             <div>
-                <h2 class="text-xl font-bold text-white tracking-tight">Purchase Analytics</h2>
-                <p id="summaryText" class="text-[11px] text-indigo-400 font-medium uppercase tracking-widest mt-1">Refined Category Logic v8.2</p>
+                <h2 class="text-xl font-bold text-white tracking-tight">Purchase Analytics 2026</h2>
+                <p id="summaryText" class="text-[11px] text-indigo-400 font-medium uppercase tracking-widest mt-1">Status: Waiting for Data...</p>
             </div>
-            <div id="statusBadge" class="hidden md:flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-400 text-[10px] font-bold rounded-full border border-indigo-500/20 uppercase tracking-widest">
-                <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse"></span> Data Ready
+            <div id="statusBadge" class="hidden px-4 py-2 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/20 uppercase">
+                Triple-Layer Matching Active
             </div>
         </header>
 
         <div class="p-8 space-y-8 max-w-[1400px] mx-auto">
-            
-            <div class="flex items-center gap-2 p-1.5 bg-slate-900 w-fit rounded-2xl border border-white/5">
-                <button onclick="setMetric('finance')" id="btnFinance" class="metric-tab active px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all flex items-center gap-2">
-                    <i data-lucide="banknote" class="w-4 h-4"></i> Finance
-                </button>
-                <button onclick="setMetric('quantity')" id="btnQuantity" class="metric-tab px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all text-slate-400 hover:text-white flex items-center gap-2">
-                    <i data-lucide="package" class="w-4 h-4"></i> Quantity
-                </button>
-            </div>
-
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="premium-card p-6 rounded-3xl">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">Total Records</p>
-                    <h3 id="statTotalItems" class="text-3xl font-black text-white">0</h3>
-                </div>
-                <div class="premium-card p-6 rounded-3xl border-l-4 border-l-indigo-500">
-                    <p id="labelMainMetric" class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">Total Amount (THB)</p>
-                    <h3 id="statMainMetricValue" class="text-3xl font-black text-white">0.00</h3>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Total Amount (THB)</p>
+                    <h3 id="statTotalAmount" class="text-3xl font-black text-white">0.00</h3>
                 </div>
                 <div class="premium-card p-6 rounded-3xl">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">Unique Skus</p>
-                    <h3 id="statUniqueProducts" class="text-3xl font-black text-white">0</h3>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Total Items</p>
+                    <h3 id="statTotalItems" class="text-3xl font-black text-white">0</h3>
                 </div>
-                <div class="premium-card p-6 rounded-3xl border-l-4 border-l-emerald-500">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">Total Companies</p>
-                    <h3 id="statTotalSuppliers" class="text-3xl font-black text-white">0</h3>
+                <div class="premium-card p-6 rounded-3xl">
+                    <p class="text-[10px] font-bold text-indigo-400 uppercase mb-1">3rd Party Items</p>
+                    <h3 id="stat3rdParty" class="text-3xl font-black text-white">0</h3>
+                </div>
+                <div class="premium-card p-6 rounded-3xl">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Total Suppliers</p>
+                    <h3 id="statSuppliers" class="text-3xl font-black text-white">0</h3>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="premium-card p-8 rounded-[2.5rem] h-[450px] flex flex-col">
-                    <h4 class="font-bold text-white flex items-center gap-2 text-md mb-6 uppercase tracking-widest text-xs">
+                <div class="premium-card p-8 rounded-[2.5rem] h-[500px] flex flex-col">
+                    <h4 class="text-xs font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
                         <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-500"></i> Category Breakdown
                     </h4>
                     <div class="flex-1 min-h-0"><canvas id="categoryPieChart"></canvas></div>
                 </div>
-                <div class="premium-card p-8 rounded-[2.5rem] h-[450px] flex flex-col">
-                    <h4 class="font-bold text-white flex items-center gap-2 text-md mb-6 uppercase tracking-widest text-xs">
-                        <i data-lucide="building" class="w-4 h-4 text-emerald-500"></i> Company Breakdown
+                <div class="premium-card p-8 rounded-[2.5rem] h-[500px] flex flex-col">
+                    <h4 class="text-xs font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4 text-emerald-500"></i> Top 10 SKU Ranking
                     </h4>
-                    <div class="flex-1 min-h-0"><canvas id="companyPieChart"></canvas></div>
+                    <div class="flex-1 min-h-0"><canvas id="top10BarChart"></canvas></div>
                 </div>
             </div>
 
-            <div class="premium-card p-8 rounded-[2.5rem]">
-                <h4 class="font-black text-white text-lg tracking-tight flex items-center gap-3 mb-8 uppercase">
-                    <i data-lucide="trending-up" class="w-6 h-6 text-amber-400"></i> Top 10 SKU Ranking
+            <div class="premium-card p-8 rounded-[2.5rem] h-[450px] flex flex-col">
+                <h4 class="text-xs font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <i data-lucide="building-2" class="w-4 h-4 text-amber-500"></i> Spending by Branch / Company
                 </h4>
-                <div class="h-[500px] w-full">
-                    <canvas id="top10BarChart"></canvas>
-                </div>
-            </div>
-
-            <div class="premium-card p-8 rounded-[2.5rem]">
-                <h4 class="font-black text-white text-lg tracking-tight flex items-center gap-3 mb-8 uppercase">
-                    <i data-lucide="bar-chart-3" class="w-6 h-6 text-indigo-400"></i> Monthly Item Volume Analysis
-                </h4>
-                <div class="h-[400px] w-full">
-                    <canvas id="monthlyTrendChart"></canvas>
-                </div>
-            </div>
-
-            <div class="premium-card p-8 rounded-[2.5rem]">
-                <h4 class="font-black text-white text-lg tracking-tight flex items-center gap-3 mb-8 uppercase">
-                    <i data-lucide="package-check" class="w-6 h-6 text-emerald-400"></i> Monthly Delivery Volume
-                </h4>
-                <div class="h-[400px] w-full">
-                    <canvas id="deliveryBarChart"></canvas>
-                </div>
-            </div>
-
-            <div class="premium-card p-8 rounded-[2.5rem]">
-                <h4 class="font-black text-white text-lg tracking-tight flex items-center gap-3 mb-8 uppercase">
-                    <i data-lucide="bar-chart" class="w-6 h-6 text-indigo-400"></i> Usage by Branch
-                </h4>
-                <div class="h-[400px] w-full">
-                    <canvas id="branchUsageChart"></canvas>
-                </div>
+                <div class="flex-1 min-h-0"><canvas id="branchBarChart"></canvas></div>
             </div>
         </div>
     </main>
@@ -223,152 +124,87 @@
     <script>
         let allData = [];
         let activeData = [];
-        let currentMetric = 'finance'; 
-        let charts = { catPie: null, compPie: null, topBar: null, trendLine: null, branchBar: null };
-        let deliveryCharts = null;
+        let charts = { catPie: null, topBar: null, branchBar: null };
 
-       // 1. ฐานข้อมูล Master Data (สกัดจากไฟล์ catagory2026.xlsx)
-const masterData2026 = {
-    "Meat Ball : With Tomato Sauce 1 kg pack": "Frozen Food",
-    "Oyako Don : (110g) {K-20030406 } 20 each pack": "Frozen Food",
-    "Curry Massaman : Chicken Frozen 1 kg": "Frozen Food",
-    "Spaghetti Noodle : Boil 54 each pack": "Frozen Food",
-    "Shower Cap : Cornstarch (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
-    "Toilet Tissue : White 2 Ply 14 m roll": "Cleaning Supply",
-    "Hand Towel M-Fold : 1 Ply Airflex (24x23cm) 250 sheet": "Cleaning Supply",
-    "Dental Kits : Wheatstraw Toothbrush + (3g) Kraft Toothpaste (17cm) (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
-    "Tomato Ketchup 300 ml bottle": "Dry Food",
-    "Oil Palm 18 lt": "Dry Food",
-    "Copy Paper : A4 80gsm White": "Stationary",
-    "Sanitary Bag : Without Logo Without Packaging Generic Bag White": "Dry & Liquid Amenity"
-    // (ระบบจะรองรับการเพิ่มรายการอื่นๆ ได้ไม่จำกัด)
-};
+        // --- LAYER 1: MASTER DATA (ดึงรายการจากไฟล์ catagory2026) ---
+        const masterData2026 = {
+            "Meat Ball : With Tomato Sauce 1 kg pack": "Frozen Food",
+            "Oyako Don : (110g) {K-20030406 } 20 each pack": "Frozen Food",
+            "Curry Massaman : Chicken Frozen 1 kg": "Frozen Food",
+            "Spaghetti Noodle : Boil 54 each pack": "Frozen Food",
+            "Shower Cap : Cornstarch (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
+            "Toilet Tissue : White 2 Ply 14 m roll": "Cleaning Supply",
+            "Hand Towel M-Fold : 1 Ply Airflex (24x23cm) 250 sheet": "Cleaning Supply",
+            "Dental Kits : Wheatstraw Toothbrush + (3g) Kraft Toothpaste (17cm) (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
+            "Tomato Ketchup 300 ml bottle": "Dry Food",
+            "Oil Palm 18 lt": "Dry Food",
+            "Copy Paper : A4 80gsm White": "Stationary",
+            "Sanitary Bag : Without Logo Without Packaging Generic Bag White": "Dry & Liquid Amenity",
+            "Slippers : Disposable (11in) Sole White (3mm)": "Dry & Liquid Amenity"
+        };
 
-// 2. กฎการกรองด้วย Keyword (สำหรับสินค้าที่ไม่มีใน Master Data)
-const categoryRules = [
-    { 
-        name: "Dry & Liquid Amenity", 
-        keywords: ["shower cap", "dental kit", "toothbrush", "shampoo", "soap bar", "amenity", "slippers"] 
-    },
-    { 
-        name: "Cleaning Supply", 
-        keywords: ["tissue", "toilet paper", "hand towel", "m-fold", "garbage bag", "cleaner", "haiter", "detergent"] 
-    },
-    { 
-        name: "Frozen Food", 
-        keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti"] 
-    },
-    { 
-        name: "Dry Food", 
-        keywords: ["mama", "instant noodle", "shoyu", "oil", "rice", "salt", "sugar", "sauce", "ketchup"] 
-    },
-    { 
-        name: "Stationary", 
-        keywords: ["paper a4", "pen", "pencil", "stapler", "tape", "folder"] 
-    }
-];
+        // --- LAYER 2: SMART KEYWORD LOGIC ---
+        const categoryRules = [
+            { name: "Dry & Liquid Amenity", keywords: ["shower cap", "dental kit", "toothbrush", "amenity", "shampoo", "slippers", "cotton pads", "handwash"] },
+            { name: "Cleaning Supply", keywords: ["toilet paper", "facial tissue", "hand towel", "m-fold", "tissue", "garbage bag", "cleaner", "dishwashing", "bleach", "haiter"] },
+            { name: "Frozen Food", keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti", "chicken green curry"] },
+            { name: "Dry Food", keywords: ["mama", "instant noodle", "shoyu", "oil", "rice", "salt", "sugar", "sauce", "ketchup", "mayonnaise"] },
+            { name: "Kitchen Supply", keywords: ["plate", "bowl", "dish", "spoon", "fork", "glass", "wrap", "foil"] },
+            { name: "Stationary", keywords: ["paper a4", "pen", "pencil", "folder", "tape", "glue", "battery"] },
+            { name: "Printing & Signage", keywords: ["sticker", "signage", "card", "keycard", "name tag"] }
+        ];
 
-// 3. ฟังก์ชันการกรองระดับ Ultimate
-function getCategory(description) {
-    if (!description) return "3rd Party";
-    
-    const fullDesc = description.trim();
-    const lowerDesc = fullDesc.toLowerCase();
+        // --- TRIPLE LAYER CLASSIFICATION ---
+        function getCategoryUltimate(description) {
+            if (!description) return "3rd Party";
+            const fullDesc = description.trim();
+            const lowerDesc = fullDesc.toLowerCase();
 
-    // --- STEP 1: เช็คชื่อเต็ม (Exact Match) ---
-    if (masterData2026[fullDesc]) {
-        return masterData2026[fullDesc];
-    }
+            // Layer 1: Exact Match (แม่นยำ 100%)
+            if (masterData2026[fullDesc]) return masterData2026[fullDesc];
 
-    // --- STEP 2: เช็ค Keyword (Priority Logic) ---
-    for (const rule of categoryRules) {
-        if (rule.keywords.some(k => lowerDesc.includes(k.toLowerCase()))) {
-            return rule.name;
-        }
-    }
-
-    // --- STEP 3: ถ้าไม่เจอเลย ให้เป็น 3rd Party ---
-    return "3rd Party";
-}
-// ฟังก์ชันดึงหมวดหมู่ที่ใช้ระบบ Priority
-function getCategory(description) {
-    if (!description) return "Others";
-    const desc = description.toLowerCase();
-
-    // วนเช็คตามลำดับความสำคัญ (ยึดตามหมวดหมู่ในไฟล์ catagory2026)
-    for (const rule of categoryRules) {
-        if (rule.keywords.some(k => desc.includes(k.toLowerCase()))) {
-            return rule.name;
-        }
-    }
-    return "Others";
-}
-
-        function getCategory(description) {
-            if (!description) return "Others";
-            const desc = description.toLowerCase();
-            const frozenKeywords = categoryRules.find(r => r.name === "Frozen Food").keywords;
-            if (frozenKeywords.some(k => desc.includes(k.toLowerCase()))) return "Frozen Food";
-            const dryKeywords = categoryRules.find(r => r.name === "Dry Food").keywords;
-            if (dryKeywords.some(k => desc.includes(k.toLowerCase()))) return "Dry Food";
+            // Layer 2: Keyword Priority Match
             for (const rule of categoryRules) {
-                if (rule.name === "Frozen Food" || rule.name === "Dry Food") continue;
-                if (rule.keywords.some(k => desc.includes(k.toLowerCase()))) return rule.name;
+                if (rule.keywords.some(k => lowerDesc.includes(k.toLowerCase()))) {
+                    return rule.name;
+                }
             }
-            return "Others";
-        }
 
-        function parseDate(str) {
-            if (!str) return null;
-            const cleanStr = str.trim();
-            const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-            const parts = cleanStr.split(/[-/ ]/);
-            if (parts.length >= 3) {
-                let d = parseInt(parts[0]);
-                let m = isNaN(parts[1]) ? months.findIndex(n => parts[1].toLowerCase().includes(n.toLowerCase())) : parseInt(parts[1]) - 1;
-                if (m > 11) m = m - 12;
-                let y = parseInt(parts[2]);
-                if (y < 100) y += 2000;
-                if (y > 2500) y -= 543;
-                const date = new Date(y, m, d);
-                return isNaN(date.getTime()) ? null : date;
-            }
-            return null;
+            // Layer 3: Fallback (สินค้าใหม่/นอกรายการ)
+            return "3rd Party";
         }
 
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
+
             Papa.parse(file, {
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
                     const branches = new Set();
-                    let minDate = null, maxDate = null;
                     allData = results.data.map(row => {
-                        const dateStr = row['Invoice Date'] || row['Exp/ Date'] || row['วันที่'] || '';
-                        const dateObj = parseDate(dateStr);
-                        const desc = row.Description || row.description || row.product || '';
-                        const branch = row.Company || row.company || row['ชื่อซัพพลายเออร์'] || 'Unknown';
-                        const total = parseFloat(String(row.Total || row.total || '0').replace(/,/g, '')) || 0;
-                        const qty = parseFloat(String(row.Qty || row.qty || '0').replace(/,/g, '')) || 0;
+                        const desc = row.Description || row.description || "";
+                        const branch = row.Company || row.company || "Unknown";
+                        const total = parseFloat(String(row.Total || 0).replace(/,/g, '')) || 0;
                         branches.add(branch);
-                        if (dateObj) {
-                            if (!minDate || dateObj < minDate) minDate = dateObj;
-                            if (!maxDate || dateObj > maxDate) maxDate = dateObj;
-                        }
-                        return { ...row, _dateObj: dateObj, _category: getCategory(desc), _branch: branch, _total: total, _qty: qty };
+                        return { 
+                            ...row, 
+                            _category: getCategoryUltimate(desc), 
+                            _branch: branch, 
+                            _total: total 
+                        };
                     });
-                    if (minDate) document.getElementById('startDate').value = minDate.toISOString().split('T')[0];
-                    if (maxDate) document.getElementById('endDate').value = maxDate.toISOString().split('T')[0];
-                    updateBranchList(Array.from(branches));
+                    
+                    updateBranchDropdown(Array.from(branches));
                     document.getElementById('statusBadge').classList.remove('hidden');
+                    document.getElementById('summaryText').innerText = `Data Loaded: ${allData.length} records`;
                     applyFilters();
                 }
             });
         }
 
-        function updateBranchList(branches) {
+        function updateBranchDropdown(branches) {
             const select = document.getElementById('filterBranch');
             select.innerHTML = '<option value="all">-- ทุกสาขา --</option>';
             branches.sort().forEach(b => {
@@ -378,158 +214,84 @@ function getCategory(description) {
             });
         }
 
-        function setMetric(metric) {
-            currentMetric = metric;
-            document.getElementById('btnFinance').classList.toggle('active', metric === 'finance');
-            document.getElementById('btnQuantity').classList.toggle('active', metric === 'quantity');
-            document.getElementById('labelMainMetric').innerText = metric === 'finance' ? 'Total Amount (THB)' : 'Total Quantity (Units)';
-            updateUI();
-        }
-
         function applyFilters() {
-            const searchTerms = document.getElementById('searchTerm').value.toLowerCase().split(',').map(t => t.trim()).filter(t => t !== '');
-            const category = document.getElementById('filterCategory').value;
+            const cat = document.getElementById('filterCategory').value;
             const branch = document.getElementById('filterBranch').value;
-            const startVal = document.getElementById('startDate').value;
-            const endVal = document.getElementById('endDate').value;
-            const startDate = startVal ? new Date(startVal) : null;
-            const endDate = endVal ? new Date(endVal) : null;
-            if(endDate) endDate.setHours(23, 59, 59);
 
-            activeData = allData.filter(row => {
-                const descText = (row.Description || row.description || row.product || '').toLowerCase();
-                const matchSearch = searchTerms.length === 0 || searchTerms.some(term => descText.includes(term));
-                const matchCat = category === 'all' || row._category === category;
-                const matchBranch = branch === 'all' || row._branch === branch;
-                let matchDate = true;
-                if (row._dateObj) {
-                    if (startDate && row._dateObj < startDate) matchDate = false;
-                    if (endDate && row._dateObj > endDate) matchDate = false;
-                } else if (startDate || endDate) matchDate = false;
-                return matchSearch && matchCat && matchBranch && matchDate;
+            activeData = allData.filter(d => {
+                const matchCat = (cat === 'all' || d._category === cat);
+                const matchBranch = (branch === 'all' || d._branch === branch);
+                return matchCat && matchBranch;
             });
             updateUI();
-        }
-
-        function resetFilters() {
-            document.getElementById('searchTerm').value = '';
-            document.getElementById('filterCategory').value = 'all';
-            document.getElementById('filterBranch').value = 'all';
-            applyFilters();
         }
 
         function updateUI() {
-            let metricSum = 0;
+            let totalAmount = 0;
+            let thirdPartyCount = 0;
             const catStats = {};
-            const compStats = {};
-            const productStats = {};
-            const monthlyStats = {};
-            const branchUsageStats = {}; // สำหรับกราฟแยกสาขา
+            const skuStats = {};
+            const branchStats = {};
+            const suppliers = new Set();
 
-            activeData.forEach(row => {
-                const valMetric = currentMetric === 'finance' ? row._total : row._qty;
-                const valQty = row._qty;
-                metricSum += valMetric;
+            activeData.forEach(d => {
+                totalAmount += d._total;
+                if (d._category === "3rd Party") thirdPartyCount++;
                 
-                catStats[row._category] = (catStats[row._category] || 0) + valMetric;
-                compStats[row._branch] = (compStats[row._branch] || 0) + valMetric;
+                catStats[d._category] = (catStats[d._category] || 0) + d._total;
                 
-                // เก็บสถิติแยกสาขาสำหรับกราฟใหม่
-                branchUsageStats[row._branch] = (branchUsageStats[row._branch] || 0) + valMetric;
-
-                const p = row.Description || row.description || row.product || 'Unknown';
-                productStats[p] = (productStats[p] || 0) + valMetric;
+                const sku = d.Description || d.description || "Unknown";
+                skuStats[sku] = (skuStats[sku] || 0) + d._total;
                 
-                if (row._dateObj) {
-                    const monthKey = row._dateObj.getFullYear() + '-' + String(row._dateObj.getMonth() + 1).padStart(2, '0');
-                    monthlyStats[monthKey] = (monthlyStats[monthKey] || 0) + valQty;
-                }
+                branchStats[d._branch] = (branchStats[d._branch] || 0) + d._total;
+                suppliers.add(d._branch);
             });
 
+            // Update Widgets
+            document.getElementById('statTotalAmount').innerText = totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2});
             document.getElementById('statTotalItems').innerText = activeData.length.toLocaleString();
-            document.getElementById('statMainMetricValue').innerText = metricSum.toLocaleString(undefined, {minimumFractionDigits: currentMetric === 'finance' ? 2 : 0});
-            document.getElementById('statUniqueProducts').innerText = Object.keys(productStats).length;
-            document.getElementById('statTotalSuppliers').innerText = Object.keys(compStats).length;
+            document.getElementById('stat3rdParty').innerText = thirdPartyCount.toLocaleString();
+            document.getElementById('statSuppliers').innerText = suppliers.size;
 
-            renderPie('categoryPieChart', 'catPie', catStats, ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#475569']);
-            renderPie('companyPieChart', 'compPie', compStats, ['#0ea5e9', '#f43f5e', '#10b981', '#fbbf24', '#a855f7', '#64748b', '#ec4899']);
-            renderTop10Bar(productStats);
-            renderTrendChart(monthlyStats);
-            
-            // วาดกราฟ Usage by Branch
-            renderBranchUsageChart(branchUsageStats);
-            
+            renderPie(catStats);
+            renderTop10(skuStats);
+            renderBranch(branchStats);
             lucide.createIcons();
         }
 
-        function renderBranchUsageChart(stats) {
-            const ctx = document.getElementById('branchUsageChart');
-            if (charts.branchBar) charts.branchBar.destroy();
-            
-            const sortedData = Object.entries(stats).sort((a, b) => b[1] - a[1]);
-            
-            charts.branchBar = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: sortedData.map(d => d[0]),
-                    datasets: [{
-                        label: currentMetric === 'finance' ? 'Total (THB)' : 'Total (Qty)',
-                        data: sortedData.map(d => d[1]),
-                        backgroundColor: '#6366f1',
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { ticks: { color: '#64748b', font: { size: 10, family: 'Sarabun' } } },
-                        y: { beginAtZero: true, ticks: { color: '#64748b' } }
-                    }
-                }
-            });
-        }
-
-        function renderPie(canvasId, chartKey, stats, colors) {
-            const ctx = document.getElementById(canvasId);
-            if(charts[chartKey]) charts[chartKey].destroy();
-            const sortedData = Object.entries(stats).sort((a,b) => b[1] - a[1]).slice(0, 10);
-            charts[chartKey] = new Chart(ctx, {
+        function renderPie(stats) {
+            const ctx = document.getElementById('categoryPieChart');
+            if(charts.catPie) charts.catPie.destroy();
+            const sortedKeys = Object.keys(stats).sort((a,b) => stats[b] - stats[a]);
+            charts.catPie = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: sortedData.map(d => d[0]),
+                    labels: sortedKeys,
                     datasets: [{
-                        data: sortedData.map(d => d[1]),
-                        backgroundColor: colors,
-                        borderColor: '#1e293b',
-                        borderWidth: 2
+                        data: sortedKeys.map(k => stats[k]),
+                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#475569'],
+                        borderWidth: 0
                     }]
                 },
                 options: { 
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: false, 
                     plugins: { 
-                        legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 10, family: 'Sarabun' }, usePointStyle: true } } 
+                        legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Sarabun', size: 11 } } } 
                     },
                     cutout: '70%'
                 }
             });
         }
 
-        function renderTop10Bar(freq) {
+        function renderTop10(stats) {
             const ctx = document.getElementById('top10BarChart');
             if(charts.topBar) charts.topBar.destroy();
-            const top10 = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            const top10 = Object.entries(stats).sort((a,b) => b[1] - a[1]).slice(0, 10);
             charts.topBar = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: top10.map(d => d[0]),
-                    datasets: [{
-                        label: currentMetric === 'finance' ? 'Total (THB)' : 'Total (Qty)',
-                        data: top10.map(d => d[1]),
-                        backgroundColor: currentMetric === 'finance' ? '#6366f1' : '#10b981',
-                        borderRadius: 8,
-                        barThickness: 30
-                    }]
+                    datasets: [{ label: 'Spending', data: top10.map(d => d[1]), backgroundColor: '#10b981', borderRadius: 8 }]
                 },
                 options: {
                     indexAxis: 'y',
@@ -537,88 +299,28 @@ function getCategory(description) {
                     plugins: { legend: { display: false } },
                     scales: {
                         x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
-                        y: { grid: { display: false }, ticks: { color: '#f8fafc', font: { size: 11 } } }
+                        y: { ticks: { color: '#fff', font: { size: 10 } } }
                     }
                 }
             });
         }
 
-        function renderTrendChart(stats) {
-            const ctx = document.getElementById('monthlyTrendChart');
-            if(charts.trendLine) charts.trendLine.destroy();
-            const sortedMonths = Object.keys(stats).sort();
-            charts.trendLine = new Chart(ctx, {
+        function renderBranch(stats) {
+            const ctx = document.getElementById('branchBarChart');
+            if(charts.branchBar) charts.branchBar.destroy();
+            const sorted = Object.entries(stats).sort((a,b) => b[1] - a[1]);
+            charts.branchBar = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: sortedMonths,
-                    datasets: [{
-                        label: 'Sales Volume (Qty)',
-                        data: sortedMonths.map(m => stats[m]),
-                        backgroundColor: 'rgba(99, 102, 241, 0.8)',
-                        hoverBackgroundColor: '#6366f1',
-                        borderRadius: 6,
-                        barThickness: 'flex',
-                        maxBarThickness: 50
-                    }]
+                    labels: sorted.map(d => d[0]),
+                    datasets: [{ label: 'Total Spending', data: sorted.map(d => d[1]), backgroundColor: '#6366f1', borderRadius: 10 }]
                 },
                 options: {
                     maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: true, labels: { color: '#94a3b8', font: { family: 'Sarabun', size: 12 } } }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#64748b', font: { family: 'Sarabun' } } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { family: 'Sarabun' } }, beginAtZero: true }
-                    }
-                }
-            });
-        }
-
-        function handleDeliveryUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    const delStats = {};
-                    results.data.forEach(row => {
-                        const dateStr = row['วันที่'] || row['Date'] || '';
-                        const d = parseDate(dateStr);
-                        if (d && row['รวมทั้งหมด'] && !dateStr.includes('รวม')) {
-                            const monthKey = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-                            const totalQty = parseFloat(String(row['รวมทั้งหมด']).replace(/,/g, '')) || 0;
-                            delStats[monthKey] = (delStats[monthKey] || 0) + totalQty;
-                        }
-                    });
-                    renderDeliveryChart(delStats);
-                }
-            });
-        }
-
-        function renderDeliveryChart(stats) {
-            const ctx = document.getElementById('deliveryBarChart');
-            if(deliveryCharts) deliveryCharts.destroy();
-            const sortedMonths = Object.keys(stats).sort();
-            deliveryCharts = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: sortedMonths,
-                    datasets: [{
-                        label: 'Total Delivery Volume (Boxes)',
-                        data: sortedMonths.map(m => stats[m]),
-                        backgroundColor: '#10b981',
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: true, labels: { color: '#94a3b8', font: { family: 'Sarabun' } } }
-                    },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { color: '#64748b', font: { family: 'Sarabun' } } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { family: 'Sarabun' } }, beginAtZero: true }
+                        x: { ticks: { color: '#64748b' } },
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }
                     }
                 }
             });
@@ -628,6 +330,3 @@ function getCategory(description) {
     </script>
 </body>
 </html>
-
-
-
