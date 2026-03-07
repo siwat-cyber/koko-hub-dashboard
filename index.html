@@ -111,6 +111,7 @@
                         <option value="Amenity special & Snack Harvest">Amenity special & Snack Harvest</option>
                          <option value="Printing & Signage">Printing & Signage</option>
                          <option value="Take Away">Take Away</option>
+                        <option value="3rd Party">3rd Party</option>
                         <option value="Others">Others</option>
                     </select>
                 </div>
@@ -233,7 +234,12 @@
 
         // 1. กฎการกรองด้วย Keyword (Priority Logic)
 const categoryRules = [
-   
+    { 
+       name: "3rd Party", 
+        keywords: ["farmhouse", "milk", "carbonated beverages", "biscuits", 
+            "breakfast cereals and health bars", "yoghurt", "wiwi", 
+            "mama", "fruit", "vegetables", "ice cream sorbet and frozen yoghurt", "coffee","Sport and Energy Drinks"] 
+    }, 
     { 
        name: "Take Away", 
         keywords: ["cup", "lid", "sauce cup", "chopsticks", "food box", "bowl", "take away","glass : pet"] 
@@ -604,6 +610,7 @@ function getCategory(description) {
     </script>
 </body>
 </html>
+
 
 
 
