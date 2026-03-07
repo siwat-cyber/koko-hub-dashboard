@@ -221,118 +221,90 @@
     </main>
 
     <script>
-        let allData = [];
-        let activeData = [];
-        let currentMetric = 'finance'; 
-        let charts = { catPie: null, compPie: null, topBar: null, trendLine: null, branchBar: null };
-        let deliveryCharts = null;
+        <script>
+// วางต่อจากบรรทัด <script> ได้เลย
+const categoryRules = [
+    { name: "Frozen Food", keywords: ["Frozen", "Meat Ball", "Chicken", "Saba", "Salmon", "Egg", "Sausage", "Gyoza", "แช่แข็ง", "ลูกชิ้น"] },
+    { name: "Dry Food", keywords: ["Oil", "Sauce", "Ketchup", "Salt", "Sugar", "Rice", "Honey", "Dressing", "Mayonnaise", "Soy"] },
+    { name: "Kitchen Supply", keywords: ["Glass", "Plate", "Bowl", "Mug", "Dish", "Fork", "Spoon", "Pizza", "Wrapping", "Film", "Machine"] },
+    { name: "Cleaning Supply", keywords: ["Tissue", "Towel", "Cleaner", "Bleach", "Detergent", "Mop", "Broom"] },
+    { name: "Dry & Liquid Amenity", keywords: ["Amenity", "Shampoo", "Soap", "Slipper", "Dental", "Toothbrush", "Shower Cap", "Sanitary Bag"] },
+    { name: "Stationary", keywords: ["Paper", "Pen", "Tape", "Ink", "A4", "Folder", "Clip"] }
+];
 
-    const masterData2026 = {
-    // --- Frozen Food ---
-    "Meat Ball : With Tomato Sauce 1 kg pack": "Frozen Food",
-    "Oyako Don : (110g) {K-20030406 } 20 each pack": "Frozen Food",
-    "Curry Massaman : Chicken Frozen 1 kg": "Frozen Food",
-    "Onion Ring : Fried 1 kg pack": "Frozen Food",
-    "Curry S 1 kg pack": "Frozen Food",
-    "Sausage : Pork And Chicken 1 kg": "Frozen Food",
-    "Grilled Saba 400 g": "Frozen Food",
-    "Chicken : Gaprao 1 kg": "Frozen Food",
-    "Chicken : Coconut Milk Soup 1 kg": "Frozen Food",
-    "Chicken : Charcoal Grilled 670 g": "Frozen Food",
-    "Pickled Vegetable / Fukujinzuke 1 kg pack": "Frozen Food",
-    "Nameko Yamakurage : [Japanese] 1 kg": "Frozen Food",
-    "Karashi Takana : [Japanese] 1 kg": "Frozen Food",
-    "Carbonara Sauce 500 g pack": "Frozen Food",
-    "Spaghetti Noodle : Boil 54 each pack": "Frozen Food",
-    "Chicken : With Panang Curry {K-25030701} 1 kg pack": "Frozen Food",
-    "Gyoza : Krispy Crisp (15g) 60 each packet": "Frozen Food",
-    "Ratatouille : Tomato Sauce 1 kg pack": "Frozen Food",
-    "Sweet Chikuzen Soup 500 g pack": "Frozen Food",
-    "Ginger Pickled Beni Shoga 1 kg": "Frozen Food",
-    "Jellyfish Salad 500 g pack": "Frozen Food",
-    "Chicken : Green Curry {K-25030601} 1 kg pack": "Frozen Food",
-    "Yakitori : Tsukune Sauce 10 each pack": "Frozen Food",
-    "Yakitori : Skin Sauce 10 each pack": "Frozen Food",
-    "Yakitori : Liver Sauce 10 each pack": "Frozen Food",
-    "Yakitori : BL Sauce 10 each pack": "Frozen Food",
-    "Butter : Fresh Unsalted 8 g portion": "Frozen Food",
-    "Cheese Parmesan : Grated 1 kg": "Frozen Food",
-    "Wasabi 2 g": "Frozen Food",
-    "Chicken : Wiener Frozen (4in) 1 kg": "Frozen Food",
-    "Frankfurt : With Born (60g) 10 each pack": "Frozen Food",
-    "Fired Egg : Frozen 40 g": "Frozen Food",
+// ... โค้ดส่วนอื่นๆ ...
 
-    // --- Kitchen Supply ---
-    "Wrapping Film : (12inx500m)": "Kitchen Supply",
-    "Dish : Rectangula White Ware Porcelain (21.5x8.5cm)": "Kitchen Supply",
-    "Chopsticks Holder : Black": "Kitchen Supply",
-    "Pizza Tray : Wooden Walnut Circle Shape (10in)": "Kitchen Supply",
-    "Bingsu Machine : (60lt / 31x45x43cm)": "Kitchen Supply",
-    "Pizza Scoop : Round Shape Short Wooden Handle Long (44cm)": "Kitchen Supply",
-    "Glass : Fin Line (175ml)": "Kitchen Supply",
-    "Dessert Spoon : Ceramic White (4.5x12.5cm) {P4014}": "Kitchen Supply",
-    "Fork : Kosamui Desert (Cut105) 12 each box": "Kitchen Supply",
-    "Soup Ladle Holder : {us-ldh-18}": "Kitchen Supply",
-    "Chopstick : Bakelite (22cm) {TCS_B2}": "Kitchen Supply",
-    "Coupe Deep Plate : Parallel White Ware Porcelain (21.5cm)": "Kitchen Supply",
-    "Glass : Hi Ball Centra (420ml) {1P01962}": "Kitchen Supply",
-    "Toothpick : White Paper Wrapped 500 each packet": "Kitchen Supply",
-    "Tea Spoon : Stainless No 4 (12cm)": "Kitchen Supply",
-    "Ceramic Coaster : With Koko Cafe Logo (10.5cm)": "Kitchen Supply",
-    "Bowl : Microwave (350ml) 25 each packet": "Kitchen Supply",
-    "Mug : Porcelain White": "Kitchen Supply",
+  // 1. กำหนดกฎการแยกหมวดหมู่ด้วย Keywords (ใส่แค่คำสั้นๆ ที่เป็นหัวใจของหมวดนั้น)
+const categoryRules = [
+    { 
+        name: "Frozen Food", 
+        keywords: ["Frozen", "Meat Ball", "Chicken", "Saba", "Salmon", "Egg", "Sausage", "Gyoza", "แช่แข็ง", "ลูกชิ้น"] 
+    },
+    { 
+        name: "Dry Food", 
+        keywords: ["Oil", "Sauce", "Ketchup", "Salt", "Sugar", "Rice", "Honey", "Dressing", "Mayonnaise", "Soy"] 
+    },
+    { 
+        name: "Kitchen Supply", 
+        keywords: ["Glass", "Plate", "Bowl", "Mug", "Dish", "Fork", "Spoon", "Pizza", "Wrapping", "Film", "Machine"] 
+    },
+    { 
+        name: "Cleaning Supply", 
+        keywords: ["Tissue", "Towel", "Cleaner", "Bleach", "Detergent", "Mop", "Broom"] 
+    },
+    { 
+        name: "Dry & Liquid Amenity", 
+        keywords: ["Amenity", "Shampoo", "Soap", "Slipper", "Dental", "Toothbrush", "Shower Cap", "Sanitary Bag"] 
+    },
+    { 
+        name: "Stationary", 
+        keywords: ["Paper", "Pen", "Tape", "Ink", "A4", "Folder", "Clip"] 
+    }
+];
 
-    // --- Dry Food ---
-    "Tomato Ketchup 300 ml bottle": "Dry Food",
-    "Salt 500 g": "Dry Food",
-    "Oil Palm 18 lt": "Dry Food",
-    "Honey 770 g bottle": "Dry Food",
-    "Garlic : Fried Jeaw [Local] 500 g packet": "Dry Food",
-    "Soy Sauce : Sesame Dressing 1.14 lt bottle": "Dry Food",
-    "Dressing : Roasted Sesame 1.05 lt bottle": "Dry Food",
-    "Mayonnaise : No Sugar 1 kg bag": "Dry Food",
-    "Dressing : Thousand Island 50% Reduced Fat And Sugar 1.06 lt bottle": "Dry Food",
-    "Parsley : Dried 90 g": "Dry Food",
-    "Sauce Shoyu : [Japanese] 1 lt bottle": "Dry Food",
-    "Tomato Ketchup : Glass Bottle 600 ml bottle": "Dry Food",
-    "Pepper Powder : Sansho [Japanese] 65 g can": "Dry Food",
-    "Layu : Chili Oil & Chili Peper 33 ml bottle": "Dry Food",
-    "Chilli Powder : Shichimi Nanami Tongarashi 15 g": "Dry Food",
-    "Soy : Sauce 150 ml bottle": "Dry Food",
-    "Seasoning Sauce 200 ml bottle": "Dry Food",
-    "Mustard Yellow Classic 226 g packet": "Dry Food",
-    "Juice Orange : Concentrate 5 lt": "Dry Food",
+// 2. ปรับปรุงฟังก์ชัน handleFileUpload ให้ใช้ Keyword Matching เป็นหลัก
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-    // --- Guest Supplies set in Room ---
-    "Mug : Porcelain White With Hotel Logo Blue Two Point Model A (300ml)": "Guest Supplies set in Room",
-    "Bottle : Plastic Blue With Head Pump Shower Gel (300ml)": "Guest Supplies set in Room",
-    "Tray : Bamboo (33x25x2cm)": "Guest Supplies set in Room",
+    Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            allData = results.data.filter(row => Object.values(row).some(v => v)).map(row => {
+                
+                // ดึงชื่อสินค้า
+                const itemName = (row['Description'] || row['รายการ'] || '').trim();
+                const lowerItem = itemName.toLowerCase();
 
-    // --- Amenity special & Snack Harvest ---
-    "Gummy : Cola Bonz 8 g": "Amenity special & Snack Harvest",
-    "Liquid Lipstick : Velvet No 01": "Amenity special & Snack Harvest",
-    "Wet Tissue : Oshibori Wave 1 each": "Amenity special & Snack Harvest",
-    "Candy : Strawberry 100 each packet": "Amenity special & Snack Harvest",
+                // --- ส่วนที่เปลี่ยนใหม่: ใช้ Keyword วนลูปเช็คเลย ---
+                let finalCategory = "3rd Party"; // ถ้าไม่เจอคำที่กำหนด จะลงหมวดนี้
+                
+                for (const rule of categoryRules) {
+                    // เช็คว่าในชื่อสินค้า มี Keyword คำไหนอยู่ในลิสต์บ้าง
+                    if (rule.keywords.some(k => lowerItem.includes(k.toLowerCase()))) {
+                        finalCategory = rule.name;
+                        break; // เจอหมวดแล้วให้หยุดลูปทันที
+                    }
+                }
 
-    // --- Stationary ---
-    "Cutter": "Stationary",
-    "Paper Roll : Thermal (80x80mm)": "Stationary",
-    "Copy Paper : A4 80gsm White": "Stationary",
+                // จัดการตัวเลข (ลบคอมม่า)
+                const cleanNum = (val) => String(val || '0').replace(/[", ]/g, '');
+                const total = parseFloat(cleanNum(row['Total'] || row['ยอดรวม'] || '0')) || 0;
 
-    // --- Take Away ---
-    "Cup : Paper Double Walled White": "Take Away",
-    "Food Box : Black Pp 4 Compartments": "Take Away",
-    "Chopsticks : (22cm)": "Take Away"
+                return { 
+                    ...row, 
+                    _category: finalCategory, 
+                    _total: total,
+                    _dateObj: parseDate(row['Invoice Date'] || row['วันที่'] || '') 
+                };
+            });
 
-    // --- Others ---
-    "Toilet Tissue : White 2 Ply 14 m roll": "Cleaning Supply",
-    "Hand Towel M-Fold : 1 Ply Airflex (24x23cm) 250 sheet": "Cleaning Supply",
-    "Copy Paper : A4 80gsm White": "Stationary",
-    "Sanitary Bag : Without Logo Without Packaging Generic Bag White": "Dry & Liquid Amenity",
-    "Shower Cap : Cornstarch (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
-    "Dental Kits : Wheatstraw Toothbrush + (3g) Kraft Toothpaste (17cm) (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity"
-};
-
+            // สั่งอัปเดต Dashboard ทันที
+            applyFilters(); 
+        }
+    });
+}
 // เพิ่ม Keywords เพื่อดักจับสินค้าตัวอื่นๆ (ช่วยลด 3rd Party)
 const categoryRules = [
    const categoryRules = [
@@ -444,36 +416,68 @@ function getCategory(description) {
         }
 
         function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    const branches = new Set();
-                    let minDate = null, maxDate = null;
-                    allData = results.data.map(row => {
-                        const dateStr = row['Invoice Date'] || row['Exp/ Date'] || row['วันที่'] || '';
-                        const dateObj = parseDate(dateStr);
-                        const desc = row.Description || row.description || row.product || '';
-                        const branch = row.Company || row.company || row['ชื่อซัพพลายเออร์'] || 'Unknown';
-                        const total = parseFloat(String(row.Total || row.total || '0').replace(/,/g, '')) || 0;
-                        const qty = parseFloat(String(row.Qty || row.qty || '0').replace(/,/g, '')) || 0;
-                        branches.add(branch);
-                        if (dateObj) {
-                            if (!minDate || dateObj < minDate) minDate = dateObj;
-                            if (!maxDate || dateObj > maxDate) maxDate = dateObj;
-                        }
-                        return { ...row, _dateObj: dateObj, _category: getCategory(desc), _branch: branch, _total: total, _qty: qty };
-                    });
-                    if (minDate) document.getElementById('startDate').value = minDate.toISOString().split('T')[0];
-                    if (maxDate) document.getElementById('endDate').value = maxDate.toISOString().split('T')[0];
-                    updateBranchList(Array.from(branches));
-                    document.getElementById('statusBadge').classList.remove('hidden');
-                    applyFilters();
+    const file = event.target.files[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            const branches = new Set();
+            let minDate = null, maxDate = null;
+
+            allData = results.data.filter(row => Object.values(row).some(v => v)).map(row => {
+                // 1. ดึงชื่อสินค้า (รองรับหัวตารางหลายแบบ)
+                const itemName = (row['Description'] || row['description'] || row['รายการ'] || row['Item Name'] || '').trim();
+                const lowerItem = itemName.toLowerCase();
+
+                // 2. ระบบจัดหมวดหมู่ด้วย Keywords (แทนที่ Master Data เดิม)
+                let finalCategory = "3rd Party"; 
+                for (const rule of categoryRules) {
+                    if (rule.keywords.some(k => lowerItem.includes(k.toLowerCase()))) {
+                        finalCategory = rule.name;
+                        break; 
+                    }
                 }
+
+                // 3. จัดการตัวเลข (ลบคอมม่าเพื่อให้คำนวณได้)
+                const cleanNum = (val) => String(val || '0').replace(/[", ]/g, '');
+                const total = parseFloat(cleanNum(row['Total'] || row['ยอดรวม'] || row['Amount'])) || 0;
+                const qty = parseFloat(cleanNum(row['Qty'] || row['จำนวน'] || row['Quantity'])) || 0;
+
+                // 4. จัดการวันที่และสาขา
+                const branch = row['Company'] || row['ชื่อซัพพลายเออร์'] || row['Branch'] || 'Unknown';
+                const dateObj = parseDate(row['Invoice Date'] || row['วันที่'] || row['Date'] || '');
+
+                if (dateObj && !isNaN(dateObj.getTime())) {
+                    if (!minDate || dateObj < minDate) minDate = dateObj;
+                    if (!maxDate || dateObj > maxDate) maxDate = dateObj;
+                }
+                branches.add(branch);
+
+                return { 
+                    ...row, 
+                    _category: finalCategory, 
+                    _total: total,
+                    _qty: qty,
+                    _branch: branch,
+                    _dateObj: dateObj 
+                };
             });
+
+            // อัปเดต UI และวาดกราฟ
+            if (minDate) document.getElementById('startDate').value = minDate.toISOString().split('T')[0];
+            if (maxDate) document.getElementById('endDate').value = maxDate.toISOString().split('T')[0];
+            
+            updateBranchList(Array.from(branches));
+            
+            // บรรทัดนี้สำคัญที่สุด: สั่งให้กราฟแสดงผลทันที
+            applyFilters(); 
+
+            document.getElementById('statusBadge').classList.remove('hidden');
         }
+    });
+}
 
         function updateBranchList(branches) {
             const select = document.getElementById('filterBranch');
@@ -735,6 +739,7 @@ function getCategory(description) {
     </script>
 </body>
 </html>
+
 
 
 
