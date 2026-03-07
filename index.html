@@ -227,50 +227,83 @@
         let charts = { catPie: null, compPie: null, topBar: null, trendLine: null, branchBar: null };
         let deliveryCharts = null;
 
-        const categoryRules = [
-            { 
-                name: "Frozen Food", 
-                keywords: [
-                    "frozen", "grilled", "saba", "salmon", "gyoza", "meat", "pork", "beef", 
-                    "chicken", "ham", "sausage", "meatball", "meat ball", "curry", "stew", "fries", 
-                    "potato", "bread", "bun", "muffin", "shio", "short plate", "yakitori", 
-                    "tsukune", "fish", "squid", "seafood", "bacon", "bratwurst", "salami",
-                    "wasabi", "ramen", "noodle", "for ramen", "butter", "penne", "ketchup", 
-                    "carbonara", "flour", "ratatouille", "donut"
-                ] 
-            },
-            { 
-                name: "Dry Food", 
-                keywords: [
-                    "shoyu", "tsuyu", "pasta", "salt", "sugar", "vinegar", "pepper", 
-                    "oil", "rice", "honey", "syrup", "seasoning", "tea", "coffee", "cereal", 
-                    "kelloggs", "kellogg", "mayonnaise", "dressing", "soy sauce", "spices", "dried", "curry paste", 
-                    "bouillon", "just joy"
-                ] 
-            },
-            { 
-                name: "Cleaning Supply", 
-                keywords: [
-                    "garbage", " Correct toilet", "Correct facial", "vahand", "tissue", "cleaner", "soap", 
-                    "detergent", "dishwashing", "bleach", "haiter", "mop", "cloth", "sponge", 
-                    "floor clean", "sanitizer", "rubber glove", "scouring", "bin liner"
-                ] 
-            },
-            { 
-                name: "Dry & Liquid Amenity", 
-                keywords: [
-                    "shampoo", "gel", "handwash", "toothbrush", "dental", "slippers", "amenity", "razor", "comb"
-                ] 
-            },
-            { 
-                name: "Uniform", 
-                keywords: ["shirt", "chef", "apron", "dress", "pants", "polo", "uniform"] 
-            },
-            { 
-                name: "Boutique shop/Merchandise", 
-                keywords: ["doll", "cap", "mug", "souvenir", "keychain"] 
-            }
-        ];
+        // Logic ชุดใหม่ สกัดจากไฟล์ catagory2026.xlsx
+const categoryRules = [
+    { 
+        name: "Cleaning Supply", 
+        keywords: [
+            "tissue", "toilet paper", "hand towel", "m-fold", "facial tissue", // แก้ปัญหาทิชชู่ 
+            "garbage bag", "dishwashing", "bleach", "haiter", "cleaner", 
+            "scotch brite", "sponge", "microfiber cloth", "gloves" // [cite: 34, 45]
+        ] 
+    },
+    { 
+        name: "Dry & Liquid Amenity", 
+        keywords: [
+            "shampoo", "shower gel", "handwash", "dental kit", "toothbrush", 
+            "shower cap", "slippers", "cotton pads", "cotton buds", "sanitary bag" // [cite: 46, 47]
+        ] 
+    },
+    { 
+        name: "Frozen Food", 
+        keywords: [
+            "frozen", "grilled", "saba", "salmon", "gyoza", "meat ball", "sausage", 
+            "chicken", "curry", "spaghetti", "carbonara", "yakitori", "tsukune", 
+            "cheese", "butter", "ramen", "daifuku", "donut", "muffin" // [cite: 1, 2, 4, 7]
+        ] 
+    },
+    { 
+        name: "Dry Food", 
+        keywords: [
+            "shoyu", "tsuyu", "ketchup", "salt", "sugar", "oil", "honey", "dressing", 
+            "mayonnaise", "pepper", "chilli", "tea", "coffee", "syrup", "jam", 
+            "rice", "pasta", "cereal", "corn flakes", "granola" // [cite: 25, 27, 28, 29]
+        ] 
+    },
+    { 
+        name: "Kitchen Supply", 
+        keywords: [
+            "plate", "bowl", "dish", "spoon", "fork", "glass", "mug", "tray", 
+            "chopsticks", "wrapping film", "baking paper", "pizza scoop" // [cite: 34, 35, 36, 38]
+        ] 
+    },
+    { 
+        name: "Stationary", 
+        keywords: [
+            "paper", "pen", "pencil", "cutter", "stapler", "tape", "glue", 
+            "folder", "file", "notebook", "envelope", "battery", "correction" // [cite: 41, 42, 43]
+        ] 
+    },
+    { 
+        name: "Printing & Signage", 
+        keywords: [
+            "sticker", "signage", "card", "keycard", "welcome card", "door hanger", 
+            "luggage tag", "envelop", "roll up", "name tag" // [cite: 8, 9, 10]
+        ] 
+    },
+    { 
+        name: "Uniform", 
+        keywords: ["shirt", "chef", "apron", "dress", "pants", "polo", "uniform", "hat chef"] // [cite: 18, 20]
+    },
+    { 
+        name: "Boutique shop/Merchandise", 
+        keywords: ["doll", "cap", "mug", "t-shirt", "koko pants", "tumbler", "sticker", "keychain"] // [cite: 11, 13, 17]
+    }
+];
+
+// ฟังก์ชันดึงหมวดหมู่ที่ใช้ระบบ Priority
+function getCategory(description) {
+    if (!description) return "Others";
+    const desc = description.toLowerCase();
+
+    // วนเช็คตามลำดับความสำคัญ (ยึดตามหมวดหมู่ในไฟล์ catagory2026)
+    for (const rule of categoryRules) {
+        if (rule.keywords.some(k => desc.includes(k.toLowerCase()))) {
+            return rule.name;
+        }
+    }
+    return "Others";
+}
 
         function getCategory(description) {
             if (!description) return "Others";
@@ -596,4 +629,5 @@
     </script>
 </body>
 </html>
+
 
