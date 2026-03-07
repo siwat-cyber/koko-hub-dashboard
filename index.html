@@ -234,11 +234,11 @@
         let charts = { catPie: null, compPie: null, topBar: null, trendLine: null, branchBar: null };
         let deliveryCharts = null;
 
-        // 1. กฎการกรองด้วย Keyword (Priority Logic)
+   // 1. กฎการกรองด้วย Keyword (ใช้ชุดข้อมูลต้นฉบับ 100% จากคุณ)
 const categoryRules = [
  { 
         name: "Frozen Food", 
-        keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti", "Scram", "eeg","Curry","Chicken","Ssausage","folies","Sweet Chikuzen","Potato","cinnamon","banana",
+        keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti", "scram", "egg","Curry","Chicken","Sausage","folies","Sweet Chikuzen","Potato","cinnamon","banana",
         "cheese","banana Muffin","tamago","nameko","Donut","fried","bamboo","thaifuku","jellyfish","takana","tonkatsu","bread pizza","oyako don","gyudon","Meat ball","Ratatouille","Donut : sugared",
                   "allowrie butter","Delifrance","Aomori Trout","Chuka Wakame","bean Paste","Welna - Pro Taste Carbonara Sauce","Spinach","TNS Pickled Vegetable / Fukujinzuke","Eel"] 
     },
@@ -305,20 +305,39 @@ const categoryRules = [
     }
 ];
 
-// 2. ฟังก์ชันดึงหมวดหมู่ (ใช้ระบบ Priority Keywords)
+// 2. ฟังก์ชันดึงหมวดหมู่ (Scoring System)
 function getCategory(description) {
-    if (!description) return "Others";
-    
-    const lowerDesc = description.toLowerCase();
+    if (!description) return "Others";
+    
+    const lowerDesc = description.toLowerCase().trim();
+    let bestCategory = "Others";
+    let highestScore = 0;
 
-    // วนเช็คตามลำดับความสำคัญใน categoryRules
-    for (const rule of categoryRules) {
-        if (rule.keywords.some(k => lowerDesc.includes(k.toLowerCase()))) {
-            return rule.name;
-        }
-    }
+    categoryRules.forEach(rule => {
+        let currentScore = 0;
+        
+        rule.keywords.forEach(keyword => {
+            const k = keyword.toLowerCase().trim();
+            
+            // 1. ถ้าชื่อสินค้าตรงกับ Keyword เป๊ะๆ (ให้คะแนนสูงสุด 100)
+            if (lowerDesc === k) {
+                currentScore += 100;
+            } 
+            // 2. ถ้าชื่อสินค้ามี Keyword นี้อยู่ข้างใน
+            else if (lowerDesc.includes(k)) {
+                // ให้คะแนนตามความยาวของ Keyword ยิ่งยาว ยิ่งเฉพาะเจาะจง
+                currentScore += (k.length * 2);
+            }
+        });
 
-    return "Others";
+        // ตรวจสอบว่าหมวดนี้ได้คะแนนรวมสูงสุดหรือไม่
+        if (currentScore > highestScore) {
+            highestScore = currentScore;
+            bestCategory = rule.name;
+        }
+    });
+
+    return bestCategory;
 }
 
         function parseDate(str) {
@@ -631,6 +650,7 @@ function getCategory(description) {
     </script>
 </body>
 </html>
+
 
 
 
