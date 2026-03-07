@@ -227,44 +227,44 @@
         let charts = { catPie: null, compPie: null, topBar: null, trendLine: null, branchBar: null };
         let deliveryCharts = null;
 
-      // 1. กฎการกรองด้วย Keyword (Priority Logic)
+        // 1. กฎการกรองด้วย Keyword (Priority Logic)
 const categoryRules = [
-    { 
-        name: "Dry & Liquid Amenity", 
-        keywords: ["shower cap", "dental kit", "toothbrush", "shampoo", "soap bar", "amenity", "slippers"] 
-    },
-    { 
-        name: "Cleaning Supply", 
-        keywords: ["tissue", "toilet paper", "hand towel", "m-fold", "garbage bag", "cleaner", "haiter", "detergent"] 
-    },
-    { 
-        name: "Frozen Food", 
-        keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti"] 
-    },
-    { 
-        name: "Dry Food", 
-        keywords: ["mama", "instant noodle", "shoyu", "oil", "rice", "salt", "sugar", "sauce", "ketchup"] 
-    },
-    { 
-        name: "Stationary", 
-        keywords: ["paper a4", "pen", "pencil", "stapler", "tape", "folder"] 
-    }
+    { 
+        name: "Dry & Liquid Amenity", 
+        keywords: ["shower cap", "dental kit", "toothbrush", "shampoo", "soap bar", "amenity", "slippers"] 
+    },
+    { 
+        name: "Cleaning Supply", 
+        keywords: ["tissue", "toilet paper", "hand towel", "m-fold", "garbage bag", "cleaner", "haiter", "detergent"] 
+    },
+    { 
+        name: "Frozen Food", 
+        keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti"] 
+    },
+    { 
+        name: "Dry Food", 
+        keywords: ["mama", "instant noodle", "shoyu", "oil", "rice", "salt", "sugar", "sauce", "ketchup"] 
+    },
+    { 
+        name: "Stationary", 
+        keywords: ["paper a4", "pen", "pencil", "stapler", "tape", "folder"] 
+    }
 ];
 
 // 2. ฟังก์ชันดึงหมวดหมู่ (ใช้ระบบ Priority Keywords)
 function getCategory(description) {
-    if (!description) return "Others";
-    
-    const lowerDesc = description.toLowerCase();
+    if (!description) return "Others";
+    
+    const lowerDesc = description.toLowerCase();
 
-    // วนเช็คตามลำดับความสำคัญใน categoryRules
-    for (const rule of categoryRules) {
-        if (rule.keywords.some(k => lowerDesc.includes(k.toLowerCase()))) {
-            return rule.name;
-        }
-    }
+    // วนเช็คตามลำดับความสำคัญใน categoryRules
+    for (const rule of categoryRules) {
+        if (rule.keywords.some(k => lowerDesc.includes(k.toLowerCase()))) {
+            return rule.name;
+        }
+    }
 
-    return "Others";
+    return "Others";
 }
 
         function parseDate(str) {
@@ -577,6 +577,7 @@ function getCategory(description) {
     </script>
 </body>
 </html>
+
 
 
 
