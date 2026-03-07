@@ -227,70 +227,69 @@
         let charts = { catPie: null, compPie: null, topBar: null, trendLine: null, branchBar: null };
         let deliveryCharts = null;
 
-        // Logic ชุดใหม่ สกัดจากไฟล์ catagory2026.xlsx
+       // 1. ฐานข้อมูล Master Data (สกัดจากไฟล์ catagory2026.xlsx)
+const masterData2026 = {
+    "Meat Ball : With Tomato Sauce 1 kg pack": "Frozen Food",
+    "Oyako Don : (110g) {K-20030406 } 20 each pack": "Frozen Food",
+    "Curry Massaman : Chicken Frozen 1 kg": "Frozen Food",
+    "Spaghetti Noodle : Boil 54 each pack": "Frozen Food",
+    "Shower Cap : Cornstarch (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
+    "Toilet Tissue : White 2 Ply 14 m roll": "Cleaning Supply",
+    "Hand Towel M-Fold : 1 Ply Airflex (24x23cm) 250 sheet": "Cleaning Supply",
+    "Dental Kits : Wheatstraw Toothbrush + (3g) Kraft Toothpaste (17cm) (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
+    "Tomato Ketchup 300 ml bottle": "Dry Food",
+    "Oil Palm 18 lt": "Dry Food",
+    "Copy Paper : A4 80gsm White": "Stationary",
+    "Sanitary Bag : Without Logo Without Packaging Generic Bag White": "Dry & Liquid Amenity"
+    // (ระบบจะรองรับการเพิ่มรายการอื่นๆ ได้ไม่จำกัด)
+};
+
+// 2. กฎการกรองด้วย Keyword (สำหรับสินค้าที่ไม่มีใน Master Data)
 const categoryRules = [
     { 
-        name: "Cleaning Supply", 
-        keywords: [
-            "tissue", "toilet paper", "hand towel", "m-fold", "facial tissue", // แก้ปัญหาทิชชู่ 
-            "garbage bag", "dishwashing", "bleach", "haiter", "cleaner", 
-            "scotch brite", "sponge", "microfiber cloth", "gloves" // [cite: 34, 45]
-        ] 
+        name: "Dry & Liquid Amenity", 
+        keywords: ["shower cap", "dental kit", "toothbrush", "shampoo", "soap bar", "amenity", "slippers"] 
     },
     { 
-        name: "Dry & Liquid Amenity", 
-        keywords: [
-            "shampoo", "shower gel", "handwash", "dental kit", "toothbrush", 
-            "shower cap", "slippers", "cotton pads", "cotton buds", "sanitary bag" // [cite: 46, 47]
-        ] 
+        name: "Cleaning Supply", 
+        keywords: ["tissue", "toilet paper", "hand towel", "m-fold", "garbage bag", "cleaner", "haiter", "detergent"] 
     },
     { 
         name: "Frozen Food", 
-        keywords: [
-            "frozen", "grilled", "saba", "salmon", "gyoza", "meat ball", "sausage", 
-            "chicken", "curry", "spaghetti", "carbonara", "yakitori", "tsukune", 
-            "cheese", "butter", "ramen", "daifuku", "donut", "muffin" // [cite: 1, 2, 4, 7]
-        ] 
+        keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti"] 
     },
     { 
         name: "Dry Food", 
-        keywords: [
-            "shoyu", "tsuyu", "ketchup", "salt", "sugar", "oil", "honey", "dressing", 
-            "mayonnaise", "pepper", "chilli", "tea", "coffee", "syrup", "jam", 
-            "rice", "pasta", "cereal", "corn flakes", "granola" // [cite: 25, 27, 28, 29]
-        ] 
-    },
-    { 
-        name: "Kitchen Supply", 
-        keywords: [
-            "plate", "bowl", "dish", "spoon", "fork", "glass", "mug", "tray", 
-            "chopsticks", "wrapping film", "baking paper", "pizza scoop" // [cite: 34, 35, 36, 38]
-        ] 
+        keywords: ["mama", "instant noodle", "shoyu", "oil", "rice", "salt", "sugar", "sauce", "ketchup"] 
     },
     { 
         name: "Stationary", 
-        keywords: [
-            "paper", "pen", "pencil", "cutter", "stapler", "tape", "glue", 
-            "folder", "file", "notebook", "envelope", "battery", "correction" // [cite: 41, 42, 43]
-        ] 
-    },
-    { 
-        name: "Printing & Signage", 
-        keywords: [
-            "sticker", "signage", "card", "keycard", "welcome card", "door hanger", 
-            "luggage tag", "envelop", "roll up", "name tag" // [cite: 8, 9, 10]
-        ] 
-    },
-    { 
-        name: "Uniform", 
-        keywords: ["shirt", "chef", "apron", "dress", "pants", "polo", "uniform", "hat chef"] // [cite: 18, 20]
-    },
-    { 
-        name: "Boutique shop/Merchandise", 
-        keywords: ["doll", "cap", "mug", "t-shirt", "koko pants", "tumbler", "sticker", "keychain"] // [cite: 11, 13, 17]
+        keywords: ["paper a4", "pen", "pencil", "stapler", "tape", "folder"] 
     }
 ];
 
+// 3. ฟังก์ชันการกรองระดับ Ultimate
+function getCategory(description) {
+    if (!description) return "3rd Party";
+    
+    const fullDesc = description.trim();
+    const lowerDesc = fullDesc.toLowerCase();
+
+    // --- STEP 1: เช็คชื่อเต็ม (Exact Match) ---
+    if (masterData2026[fullDesc]) {
+        return masterData2026[fullDesc];
+    }
+
+    // --- STEP 2: เช็ค Keyword (Priority Logic) ---
+    for (const rule of categoryRules) {
+        if (rule.keywords.some(k => lowerDesc.includes(k.toLowerCase()))) {
+            return rule.name;
+        }
+    }
+
+    // --- STEP 3: ถ้าไม่เจอเลย ให้เป็น 3rd Party ---
+    return "3rd Party";
+}
 // ฟังก์ชันดึงหมวดหมู่ที่ใช้ระบบ Priority
 function getCategory(description) {
     if (!description) return "Others";
@@ -629,5 +628,6 @@ function getCategory(description) {
     </script>
 </body>
 </html>
+
 
 
