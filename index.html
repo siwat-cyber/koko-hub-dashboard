@@ -228,69 +228,108 @@
         let charts = { catPie: null, compPie: null, topBar: null, trendLine: null, branchBar: null };
         let deliveryCharts = null;
 
-        // 1. ฐานข้อมูล Master Data (สกัดจากไฟล์ catagory2026.xlsx)
-        const masterData2026 = {
-            "Meat Ball : With Tomato Sauce 1 kg pack": "Frozen Food",
-            "Oyako Don : (110g) {K-20030406 } 20 each pack": "Frozen Food",
-            "Curry Massaman : Chicken Frozen 1 kg": "Frozen Food",
-            "Spaghetti Noodle : Boil 54 each pack": "Frozen Food",
-            "Shower Cap : Cornstarch (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
-            "Toilet Tissue : White 2 Ply 14 m roll": "Cleaning Supply",
-            "Hand Towel M-Fold : 1 Ply Airflex (24x23cm) 250 sheet": "Cleaning Supply",
-            "Dental Kits : Wheatstraw Toothbrush + (3g) Kraft Toothpaste (17cm) (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
-            "Tomato Ketchup 300 ml bottle": "Dry Food",
-            "Oil Palm 18 lt": "Dry Food",
-            "Copy Paper : A4 80gsm White": "Stationary",
-            "Sanitary Bag : Without Logo Without Packaging Generic Bag White": "Dry & Liquid Amenity"
-        };
+       // ==========================================
+// 1. DATABASE: MASTER DATA 2026 (รวมทุกหมวด)
+// ==========================================
+const masterData2026 = {
+    // --- Dry & Liquid Amenity ---
+    "Sanitary Bag : Without Logo Without Packaging Generic Bag White": "Dry & Liquid Amenity",
+    "Shower Cap : Cornstarch (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
+    "Slippers : Disposable (11in) Sole White (3mm)": "Dry & Liquid Amenity",
+    "Dental Kits : Wheatstraw Toothbrush + (3g) Kraft Toothpaste (17cm) (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
+    "Shower Gel : Standard Ozone (Light Blue) 5 lt": "Dry & Liquid Amenity",
+    "Handwash : Standard Ozone (Clear) 5 lt": "Dry & Liquid Amenity",
+    "Shampoo And Conditioner : Standard Ozone (Dark Blue) 5 lt": "Dry & Liquid Amenity",
 
-        // 2. กฎการกรองด้วย Keyword (สำหรับสินค้าที่ไม่มีใน Master Data)
-        const categoryRules = [
-            { 
-                name: "Dry & Liquid Amenity", 
-                keywords: ["shower cap", "dental kit", "toothbrush", "shampoo", "soap", "amenity", "slippers"] 
-            },
-            { 
-                name: "Cleaning Supply", 
-                keywords: ["tissue", "toilet paper", "hand towel", "m-fold", "garbage bag", "cleaner", "haiter"] 
-            },
-            { 
-                name: "Frozen Food", 
-                keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti"] 
-            },
-            { 
-                name: "Dry Food", 
-                keywords: ["mama", "instant noodle", "shoyu", "oil", "rice", "salt", "sugar", "sauce", "ketchup"] 
-            },
-            { 
-                name: "Stationary", 
-                keywords: ["paper a4", "pen", "pencil", "stapler", "tape", "folder"] 
-            }
-        ];
+    // --- Cleaning Supply ---
+    "Bag Garbage : Black (36x45in) 1 kg pack": "Cleaning Supply",
+    "Bag Garbage : Black (30x40in) 1 kg pack": "Cleaning Supply",
+    "Toilet Tissue : White 2 Ply 14 m roll": "Cleaning Supply",
+    "Hand Towel : 2 Ply White (20x23cm) 250 sheet packet": "Cleaning Supply",
+    "Dishwashing Liquid 3.2 lt": "Cleaning Supply",
 
-        // 3. ฟังก์ชันการกรองระดับ Ultimate (แก้ไขใหม่ให้เช็คชื่อเต็มก่อน)
-        function getCategory(description) {
-            if (!description) return "3rd Party";
-            
-            const fullDesc = description.trim();
-            const lowerDesc = fullDesc.toLowerCase();
+    // --- Stationary ---
+    "Copy Paper : A4 80gsm White 500 sheet ream": "Stationary",
+    "Paper Roll : Thermal (80x80mm) 1 each roll": "Stationary",
+    "Battery : AA 1.5V Alkaline 1 each": "Stationary",
+    "Double Clip : Black (50mm) 12 each box": "Stationary",
 
-            // --- STEP 1: เช็คชื่อเต็ม (Exact Match) ---
-            if (masterData2026[fullDesc]) {
-                return masterData2026[fullDesc];
-            }
+    // --- Take Away ---
+    "Cup : Paper Double Walled White No Logo (8oz) 1 each": "Take Away",
+    "Food Box : Black Pp 4 Compartments (Ex) And Pet Lid": "Take Away",
+    "Spoon-Fork Set : Black Plastic And Tissue 50 each pack": "Take Away",
 
-            // --- STEP 2: เช็ค Keyword ---
-            for (const rule of categoryRules) {
-                if (rule.keywords.some(k => lowerDesc.includes(k.toLowerCase()))) {
-                    return rule.name;
-                }
-            }
+    // --- Kitchen Supply ---
+    "Box : Pizza (10in) 1 each": "Kitchen Supply",
+    "Gloves : Nitrile Disposable No Powder Black (Size M)": "Kitchen Supply",
+    "Plate : Ceramic White 3 Parts (20.5cm)": "Kitchen Supply",
 
-            // --- STEP 3: ถ้าไม่เจอเลย ให้เป็น 3rd Party ---
-            return "3rd Party";
+    // --- Dry Food ---
+    "Tomato Ketchup 300 ml bottle": "Dry Food",
+    "Rice : Japonica Sasanishiki [Japanese] 5 kg": "Dry Food",
+    "Coffee : Bean Morning Bean 250 g packet": "Dry Food",
+    "Soy Sauce : Sesame Dressing 1.14 lt bottle": "Dry Food",
+
+    // --- Amenity special & Snack Harvest ---
+    "Gummy : Cola Bonz 8 g": "Amenity special & Snack Harvest",
+    "Candy : Strawberry 100 each packet": "Amenity special & Snack Harvest",
+    "Liquid Lipstick : Velvet No 01": "Amenity special & Snack Harvest",
+
+    // --- Uniform ---
+    "Polo Shirt : Blue Jump Sleeve 2 Logo Dry Tech Fabric SS": "Uniform",
+    "Koko Star : Male Bottom (Size M)": "Uniform",
+    "Shirt Engineer : Navy Blue Color (Size 2XL) {F325}": "Uniform",
+    "Apron : Full Body Grey Color {10AFSC004U}": "Uniform",
+
+    // --- Boutique shop/Merchandise ---
+    "Cap : White Logo 2 Point Front And Back": "Boutique shop/Merchandise",
+    "Koko Pants : For Kids 2 Pocket Gathered Leg Italian Silk": "Boutique shop/Merchandise",
+
+    // --- Printing & Signage ---
+    "Key Card Holder : 250g Paper Art Card Print 1 Side": "Printing & Signage",
+    "Door Hanger : Do Not Disturb / Make Up Room Plastic White": "Printing & Signage"
+};
+
+// ==========================================
+// 2. RULES: KEYWORD MATCHING (กรณีไม่เจอใน Master)
+// ==========================================
+const categoryRules = [
+    { name: "Dry & Liquid Amenity", keywords: ["toothbrush", "dental kit", "shower cap", "slippers", "cotton pads", "cotton buds", "shampoo", "shower gel", "handwash", "sanitary bag"] },
+    { name: "Cleaning Supply", keywords: ["garbage", "tissue", "towel", "dishwashing", "bleach", "cleaner", "cloth", "sponge", "scotch brite"] },
+    { name: "Stationary", keywords: ["paper", "pen", "pencil", "tape", "folder", "clip", "stapler", "envelope", "cutter", "battery"] },
+    { name: "Take Away", keywords: ["cup sauce", "food box", "dipping sauce", "spoon-fork set", "compartments", "built-in lid", "take away"] },
+    { name: "Kitchen Supply", keywords: ["bowl", "plate", "spoon", "fork", "bag", "gloves", "napkin", "straw", "film", "pizza", "glass", "ceramic"] },
+    { name: "Amenity special & Snack Harvest", keywords: ["gummy", "jelly", "lipstick", "bubble gum", "candy", "lollipops", "wet tissue"] },
+    { name: "Dry Food", keywords: ["sauce", "shoyu", "oil", "salt", "tea", "coffee", "jam", "syrup", "rice", "pasta", "honey", "miso"] },
+    { name: "Uniform", keywords: ["polo", "shirt", "apron", "koko star", "dress", "uniform", "chef", "home maker"] },
+    { name: "Boutique shop/Merchandise", keywords: ["merchandise", "koko pants", "koko friends", "tumbler", "mug", "cap", "pillow"] },
+    { name: "Printing & Signage", keywords: ["card holder", "keycard", "sticker", "signage", "welcome card", "door hanger"] },
+    { name: "Frozen Food", keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori"] }
+];
+
+// ==========================================
+// 3. FUNCTION: การจัดหมวดหมู่หลัก
+// ==========================================
+function getCategory(description) {
+    if (!description) return "3rd Party";
+    const fullDesc = description.trim();
+    const lowerDesc = fullDesc.toLowerCase();
+
+    // ลำดับ 1: เช็ค Master Data (แม่นยำที่สุด)
+    if (masterData2026[fullDesc]) {
+        return masterData2026[fullDesc];
+    }
+
+    // ลำดับ 2: เช็ค Keyword
+    for (const rule of categoryRules) {
+        if (rule.keywords.some(k => lowerDesc.includes(k.toLowerCase()))) {
+            return rule.name;
         }
+    }
 
+    // ลำดับ 3: ถ้าไม่เจอเลย
+    return "3rd Party";
+}
         function parseDate(str) {
             if (!str) return null;
             const cleanStr = str.trim();
@@ -599,3 +638,4 @@
     </script>
 </body>
 </html>
+
