@@ -28,7 +28,6 @@
         .sidebar-scroll { height: calc(100vh - 120px); overflow-y: auto; scrollbar-width: thin; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 
         select, input { 
@@ -100,22 +99,16 @@
 
                 <div>
                     <label class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 block">หมวดหมู่</label>
-                   <select id="filterCategory" onchange="applyFilters()" class="w-full p-3 rounded-xl text-xs outline-none appearance-none cursor-pointer">
-    <option value="all">-- ทุกหมวดหมู่ --</option>
-    <option value="Dry Food">Dry Food</option>
-    <option value="Frozen Food">Frozen Food</option>
-    <option value="Cleaning Supply">Cleaning Supply</option>
-    <option value="Dry & Liquid Amenity">Dry & Liquid Amenity</option>
-    <option value="Take Away">Take Away</option>
-    <option value="Stationary">Stationary</option>
-    <option value="Kitchen Supply">Kitchen Supply</option>
-    <option value="Amenity special & Snack Harvest">Amenity special & Snack Harvest</option>
-    <option value="Guest Supplies set in Room">Guest Supplies set in Room</option>
-    <option value="Printing & Signage">Printing & Signage</option>
-    <option value="Uniform">Uniform</option>
-    <option value="Boutique shop/Merchandise">Boutique/Merchandise</option>
-    <option value="3rd Party">3rd Party</option>
-</select>
+                    <select id="filterCategory" onchange="applyFilters()" class="w-full p-3 rounded-xl text-xs outline-none appearance-none cursor-pointer">
+                        <option value="all">-- ทุกหมวดหมู่ --</option>
+                        <option value="Dry Food">Dry Food</option>
+                        <option value="Frozen Food">Frozen Food</option>
+                        <option value="Cleaning Supply">Cleaning Supply</option>
+                        <option value="Dry & Liquid Amenity">Dry & Liquid Amenity</option>
+                        <option value="Uniform">Uniform</option>
+                        <option value="Boutique shop/Merchandise">Boutique/Merchandise</option>
+                        <option value="Others">Others</option>
+                    </select>
                 </div>
 
                 <div>
@@ -234,370 +227,97 @@
         let charts = { catPie: null, compPie: null, topBar: null, trendLine: null, branchBar: null };
         let deliveryCharts = null;
 
-       // ==========================================
-// 1. DATABASE: MASTER DATA 2026 (รวมทุกหมวด)
-// ==========================================
+       // 1. ฐานข้อมูล Master Data (สกัดจากไฟล์ catagory2026.xlsx)
 const masterData2026 = {
-    // --- Dry & Liquid Amenity ---
-    "Sanitary Bag : Without Logo Without Packaging Generic Bag White": "Dry & Liquid Amenity",
-    "Shower Cap : Cornstarch (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
-    "Slippers : Disposable (11in) Sole White (3mm)": "Dry & Liquid Amenity",
-    "Dental Kits : Wheatstraw Toothbrush + (3g) Kraft Toothpaste (17cm) (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
-    "Shower Gel : Standard Ozone (Light Blue) 5 lt": "Dry & Liquid Amenity",
-    "Handwash : Standard Ozone (Clear) 5 lt": "Dry & Liquid Amenity",
-    "Shampoo And Conditioner : Standard Ozone (Dark Blue) 5 lt": "Dry & Liquid Amenity",
-
-    // --- Cleaning Supply ---
-    "Bag Garbage : Black (36x45in) 1 kg pack": "Cleaning Supply",
-    "Bag Garbage : Black (30x40in) 1 kg pack": "Cleaning Supply",
-    "Hand Towel : 2 Ply White (20x23cm) 250 sheet packet": "Cleaning Supply",
-    "Toilet Tissue : White 2 Ply 14 m roll": "Cleaning Supply",
-    "Toilet Tissue : 2 Ply Jumbo Rolls 300 m roll": "Cleaning Supply",
-    "Scotch Brite : Green No 96 (4.5x6in) 10 each pack": "Cleaning Supply",
-    "Facial Tissue : 2 Ply Long (19x19cm) {Pulp Grad} 10 kg packet": "Cleaning Supply",
-    "Dishwashing Liquid 3.2 lt": "Cleaning Supply",
-     "Bleach : Liquid Pink Color 2500 ml": "Cleaning Supply",
-     "Bag Garbage : Black Recycle Roll (18x20in) 55 each roll": "Cleaning Supply",
-     "Hand Towel M-Fold : 1 Ply Airflex (24x23cm) 250 sheet": "Cleaning Supply",
-    "Kitchen Cleaner 500 ml": "Cleaning Supply",
-    "Microfiber Cloth : Blue {D5627662} 1 each": "Cleaning Supply",
-    "Sponge : Green Yellow (3x4in) 1 each": "Cleaning Supply",
-    "Bag Garbage : Black Recycle Roll (18x20in) 1 each": "Cleaning Supply",
-
-
-    // --- Take Away ---
-   "Cup : Paper Double Walled White No Logo (8oz) 1 each": "Take Away",
-            "Cover : Gourmet Color White 8 oz": "Take Away",
-            "Coffee Cup Sleeve : For Hot Cup (8oz)": "Take Away",
-            "Cup Sauce : With Lid (3oz) 50 each pack": "Take Away",
-            "Glass : PET Screened Koko Cafe Logo White Color With Ready To Drink Lid Cover (16oz / 5x5cm) {PET-16/M-98S}": "Take Away",
-            "Dipping Sauce Cup : Pp With Lid (2oz) 50 each pack": "Take Away",
-            "Chopsticks : (22cm) And Clear Plastic Film Bag 100 each pack": "Take Away",
-            "Spoon-Fork Set : Black Plastic And Tissue 50 each pack": "Take Away",
-            "Bowl : Black Pp With Inner Tray With Lid 25 each pack": "Take Away",
-            "Food Box : Black Pp 4 Compartments (Ex) And Pet Lid With Spoon Holder 25 each pack": "Take Away",
-            "Food Box : Clear Pp 2 Compartments With Built-In Lid (750ml) 25 each pack": "Take Away",
-            "Food Box : Clear Pp With Built-In Lid (750ml) 25 each pack": "Take Away",
-            "Food Box : Black Pp Square With Lid (650ml) 25 each pack": "Take Away",
-            "Food Pan : Stainless Steel 1/6 (16.5x17.5x10cm)": "Take Away",
-
-    // --- Kitchen Supply ---
-    "Box : Pizza (10in) 1 each": "Kitchen Supply",
-            "Wrapping Film : (30cm X 300m)": "Kitchen Supply",
-            "Bag : Plastic Clear For Take Away Cup (16-32oz) 200 g bag": "Kitchen Supply",
-            "Blackboards : Mini": "Kitchen Supply",
-            "Coffee Stirrer Straw : Wrapped In Film (10x10x10cm) 1 each": "Kitchen Supply",
-            "Straws : Flexible White Plastic Wrapped (5mmx21cm) 100 each pack": "Kitchen Supply",
-            "Baking Paper : (30x30cm) 1 each": "Kitchen Supply",
-            "Cocktail Napkin : (33x33cm) 500 piece pack": "Kitchen Supply",
-            "Counter Cloth : Blue (35x35cm) {Ch-604} 1 each": "Kitchen Supply",
-            "Counter Cloth : Pink (35x35cm) 1 each": "Kitchen Supply",
-            "Gloves : Latex Powder Free White (Size L) {Green Box} 100 each pair": "Kitchen Supply",
-            "Gloves : Latex Powder Free White (Size M) {Green Box} 100 each pair": "Kitchen Supply",
-            "Heat Bowl : Color White With Cover (1.8lt)": "Kitchen Supply",
-            "Rubber Band : Red (Small Size) 1 each bag": "Kitchen Supply",
-            "Bakery Case : {8224}": "Kitchen Supply",
-            "Case Cover : {8220}": "Kitchen Supply",
-            "Bag : Plastic PE (12x20in) 1 kg": "Kitchen Supply",
-            "Bag : Plastic Clear Cold PE (8x12in) 1 kg": "Kitchen Supply",
-            "Chalk : Mix Color 60 each box": "Kitchen Supply",
-            "Bag : Plastic Hot (6x9in) 1 kg": "Kitchen Supply",
-            "Bag : Plastic Hot (8x12in) 1 kg packet": "Kitchen Supply",
-            "Mini Tray : Brown (245x365x23mm) {0481}": "Kitchen Supply",
-            "Rectangula Dish : White Ware Porcelain (23.0x13.5cm)": "Kitchen Supply",
-            "Bowl : White Ware Porcelain (13.0cm)": "Kitchen Supply",
-            "Pasta Plate : White Ware Porcelain (28.0cm)": "Kitchen Supply",
-            "Pasta Bowl : White Ware Porcelain (20.5cm)": "Kitchen Supply",
-            "Cereal Bowl : White Ware Porcelain (16.0x16.0cm)": "Kitchen Supply",
-            "Basket : Wooden Assorted Color (15cm)": "Kitchen Supply",
-            "Adapter Bar : For Hot Dish 1/2 (32cm / Thickness 1mm) {GN-12A}": "Kitchen Supply",
-            "Plate : Ceramic White 3 Parts (20.5cm)": "Kitchen Supply",
-            "Gloves : Nitrile Disposable No Powder Blue (Size M) 100 each box": "Kitchen Supply",
-            "Gloves : Nitrile Disposable No Powder Black (Size M) 100 each box": "Kitchen Supply",
-            "Gloves : Nitrile Disposable No Powder Black (Size L) 100 each box": "Kitchen Supply",
-            "Gloves : Nitrile Disposable No Powder Blue (Size L) 100 each box": "Kitchen Supply",
-            "Bag : Plastic Clear Cold (6x9in) 1 kg pack": "Kitchen Supply",
-            "Cup With Saucer : Porcelain White With Hotel Logo Blue Two Point": "Kitchen Supply",
-            "Sauce Cup : With Relief White Porcelain (6.5cm) {RP0345WW000}": "Kitchen Supply",
-            "Tableware Kid's Set : Glass/ Bowl/ Plate/ Spoon/ Fork Deer Pattern 1 set": "Kitchen Supply",
-            "Tableware Kid's Set : Glass/ Bowl/ Plate/ Spoon/ Fork Bus Pattern 1 set": "Kitchen Supply",
-            "Tableware Kid's Set : Glass/ Bowl/ Plate/ Spoon/ Fork Elephant Pattern 1 set": "Kitchen Supply",
-            "Wheel Cutter : For Pizza": "Kitchen Supply",
-            "Black Board Mini : With Stand (8.6x5.4cm)": "Kitchen Supply",
-            "Menu Folder : 6 Pages For Food": "Kitchen Supply",
-            "Wrapping Film : (12inx500m)": "Kitchen Supply",
-            "Dish : Rectangula White Ware Porcelain (21.5x8.5cm)": "Kitchen Supply",
-            "Chopsticks Holder : Black": "Kitchen Supply",
-            "Pizza Tray : Wooden Walnut Circle Shape (10in)": "Kitchen Supply",
-            "Bingsu Machine : (60lt / 31x45x43cm)": "Kitchen Supply",
-            "Pizza Scoop : Round Shape Short Wooden Handle Long (44cm)": "Kitchen Supply",
-            "Glass : Fin Line (175ml)": "Kitchen Supply",
-            "Dessert Spoon : Ceramic White (4.5x12.5cm) {P4014}": "Kitchen Supply",
-            "Fork : Kosamui Desert (Cut105) 12 each box": "Kitchen Supply",
-            "Soup Ladle Holder : {us-ldh-18}": "Kitchen Supply",
-            "Chopstick : Bakelite (22cm) {TCS_B2}": "Kitchen Supply",
-            "Coupe Deep Plate : Parallel White Ware Porcelain (21.5cm)": "Kitchen Supply",
-            "Glass : Hi Ball Centra (420ml) {1P01962}": "Kitchen Supply",
-            "Toothpick : White Paper Wrapped 500 each packet": "Kitchen Supply",
-            "Tea Spoon : Stainless No 4 (12cm)": "Kitchen Supply",
-            "Ceramic Coaster : With Koko Cafe Logo (10.5cm)": "Kitchen Supply",
-            "Bowl : Microwave (350ml) 25 each packet": "Kitchen Supply",
-
-    // --- Dry Food ---
-    "Tomato Ketchup 300 ml bottle": "Dry Food",
-            "Salt 500 g": "Dry Food",
-            "Oil Palm 18 lt": "Dry Food",
-            "Honey 770 g bottle": "Dry Food",
-            "Garlic : Fried Jeaw [Local] 500 g packet": "Dry Food",
-            "Soy Sauce : Sesame Dressing 1.14 lt bottle": "Dry Food",
-            "Dressing : Roasted Sesame 1.05 lt bottle": "Dry Food",
-            "Mayonnaise : No Sugar 1 kg bag": "Dry Food",
-            "Dressing : Thousand Island 50% Reduced Fat And Sugar 1.06 lt bottle": "Dry Food",
-            "Parsley : Dried 90 g": "Dry Food",
-            "Sauce Shoyu : [Japanese] 1 lt bottle": "Dry Food",
-            "Tomato Ketchup : Glass Bottle 600 ml bottle": "Dry Food",
-            "Pepper Powder : Sansho [Japanese] 65 g can": "Dry Food",
-            "Layu : Chili Oil & Chili Peper 33 ml bottle": "Dry Food",
-            "Chilli Powder : Shichimi Nanami Tongarashi 15 g": "Dry Food",
-            "Soy : Sauce 150 ml bottle": "Dry Food",
-            "Seasoning Sauce 200 ml bottle": "Dry Food",
-            "Mustard Yellow Classic 226 g packet": "Dry Food",
-            "Juice Orange : Concentrate 5 lt": "Dry Food",
-            "Green Tea : Oi Ocha Sara Ryokucha {Minimum Order 160 Boxes} 80 g packet": "Dry Food",
-            "Tea Bag : Envelopes Yellow Label 1 each": "Dry Food",
-            "Jam : Strawberry 4.5 kg": "Dry Food",
-            "Dressing : Caesar Salad 1.05 lt bottle": "Dry Food",
-            "Chips : Smoked Bacon {18965} 200 g pack": "Dry Food",
-            "Teriyaki Sauce 1 lt bottle": "Dry Food",
-            "Sauce : Tsuyu No Moto 3 Bai 1 lt bottle": "Dry Food",
-            "Sauce Tonkatsu 1 lt": "Dry Food",
-            "Marukome Miso Soup : Instant Powder 100 each pack": "Dry Food",
-            "Jam : Orange Marmalade 4.5 kg": "Dry Food",
-            "Honeycomb : In Frame (Size 1.7kg)": "Dry Food",
-            "Coffee : Bean Morning Bean 250 g packet": "Dry Food",
-            "Caramel Syrup 750 ml bottle": "Dry Food",
-            "Hazelnut Syrup 750 ml bottle": "Dry Food",
-            "Vanilla Syrup 750 ml bottle": "Dry Food",
-            "Cleaning Tablet 30 each can": "Dry Food",
-            "Cleaner : Milk System Boncafe 500 ml bottle": "Dry Food",
-            "Peppercorn Black : Grinder 70 g": "Dry Food",
-            "Vinegar : Apple Cider 250 ml bottle": "Dry Food",
-            "Macaroni : Elbow 2.5 kg": "Dry Food",
-            "Mediterranean : Sea Salt Grinder 60 g bottle": "Dry Food",
-            "Sesame Oil 150 ml": "Dry Food",
-            "Chilli Oil 190 ml": "Dry Food",
-            "Seasoning Sauce 100 ml bottle": "Dry Food",
-            "Tea Black : Pure Ceylon {Premium Quality} 1.8 g bag": "Dry Food",
-            "Tea : Pure Camomile Asia 1 g": "Dry Food",
-            "Rice : Japonica Sasanishiki [Japanese] 5 kg": "Dry Food",
-            "Sauce : Pizza 1 kg": "Dry Food",
-            "Granola : Super Berry 220 g packet": "Dry Food",
-            "Corn Flakes 500 g packet": "Dry Food",
-            "Peanut Butter : Creamy 340 g bottle": "Dry Food",
-            "Pasta : Chifferini Rigati {No 38} 500 g": "Dry Food",
-
-    // --- หมวด Guest Supplies set in Room (จากภาพ image_4413c4) ---
-            "Mug : Porcelain White With Hotel Logo Blue Two Point Model A (300ml)": "Guest Supplies set in Room",
-            "Bottle : Plastic Blue With Head Pump Shower Gel (300ml)": "Guest Supplies set in Room",
-            "Tray : Bamboo (33x25x2cm)": "Guest Supplies set in Room",
-
-    // --- Amenity special & Snack Harvest ---
-    "Gummy : Cola Bonz 8 g": "Amenity special & Snack Harvest",
-            "Jelly : Mixed Fruit 25 each pack": "Amenity special & Snack Harvest",
-            "Liquid Lipstick : Velvet No 01": "Amenity special & Snack Harvest",
-            "Liquid Lipstick : Velvet No 03": "Amenity special & Snack Harvest",
-            "Wet Tissue : Oshibori Wave 1 each": "Amenity special & Snack Harvest",
-            "Bubup Bubble Gum 3 g": "Amenity special & Snack Harvest",
-            "Candy : Lemon and Salt Flavor 100 each packet": "Amenity special & Snack Harvest",
-            "Candy : Strawberry 100 each packet": "Amenity special & Snack Harvest",
-            "Mini Lollipops : Creamy Flavor 6 g": "Amenity special & Snack Harvest",
-            "Gummy : Cola Burger 7 g pack": "Amenity special & Snack Harvest",
-            "Gummy : Mini Waffle Sandwich 7 g pack": "Amenity special & Snack Harvest",
-            "Gummy : Berri Bonz Blackberry 8 g pack": "Amenity special & Snack Harvest",
-            "Gummy : Berri Bonz Strawberry 8 g pack": "Amenity special & Snack Harvest",
-            "Gummy : Yupi Burger 7 g pack": "Amenity special & Snack Harvest",
-            "Gummy : Frankfurter 7 g pack": "Amenity special & Snack Harvest",
-            "Gummy : Happy Bears 8 g pack": "Amenity special & Snack Harvest",
-            "Candy : Customized Mix 5 Patterns 15 g": "Amenity special & Snack Harvest",
-            "Jelly : Gummy Fangs #8992741948708 7.5 g box": "Amenity special & Snack Harvest",
-
-    // --- Uniform ---
-    "Polo Shirt : Blue Jump Sleeve 2 Logo Dry Tech Fabric SS": "Uniform",
-    "Koko Star : Male Bottom (Size M)": "Uniform",
-    "Shirt Engineer : Navy Blue Color (Size 2XL) {F325}": "Uniform",
-    "Apron : Full Body Grey Color {10AFSC004U}": "Uniform",
-
-    // --- Frozen Food---
     "Meat Ball : With Tomato Sauce 1 kg pack": "Frozen Food",
-            "Oyako Don : (110g) {K-20030406 } 20 each pack": "Frozen Food",
-            "Curry Massaman : Chicken Frozen 1 kg": "Frozen Food",
-            "Onion Ring : Fried 1 kg pack": "Frozen Food",
-            "Curry S 1 kg pack": "Frozen Food",
-            "Sausage : Pork And Chicken 1 kg": "Frozen Food",
-            "Grilled Saba 400 g": "Frozen Food",
-            "Chicken : Gaprao 1 kg": "Frozen Food",
-            "Chicken : Coconut Milk Soup 1 kg": "Frozen Food",
-            "Chicken : Charcoal Grilled 670 g": "Frozen Food",
-            "Pickled Vegetable / Fukujinzuke 1 kg pack": "Frozen Food",
-            "Nameko Yamakurage : [Japanese] 1 kg": "Frozen Food",
-            "Karashi Takana : [Japanese] 1 kg": "Frozen Food",
-            "Carbonara Sauce 500 g pack": "Frozen Food",
-            "Spaghetti Noodle : Boil 54 each pack": "Frozen Food",
-            "Chicken : With Panang Curry {K-25030701} 1 kg pack": "Frozen Food",
-            "Gyoza : Krispy Crisp (15g) 60 each packet": "Frozen Food",
-            "Ratatouille : Tomato Sauce 1 kg pack": "Frozen Food",
-            "Sweet Chikuzen Soup 500 g pack": "Frozen Food",
-            "Ginger Pickled Beni Shoga 1 kg": "Frozen Food",
-            "Jellyfish Salad 500 g pack": "Frozen Food",
-            "Chicken : Green Curry {K-25030601} 1 kg pack": "Frozen Food",
-            "Yakitori : Tsukune Sauce 10 each pack": "Frozen Food",
-            "Yakitori : Skin Sauce 10 each pack": "Frozen Food",
-            "Yakitori : Liver Sauce 10 each pack": "Frozen Food",
-            "Yakitori : BL Sauce 10 each pack": "Frozen Food",
-            "Butter : Fresh Unsalted 8 g portion": "Frozen Food",
-            "Cheese Parmesan : Grated 1 kg": "Frozen Food",
-            "Wasabi 2 g": "Frozen Food",
-            "Chicken : Wiener Frozen (4in) 1 kg": "Frozen Food",
-            "Frankfurt : With Born (60g) 10 each pack": "Frozen Food",
-            "Fired Egg : Frozen 40 g": "Frozen Food",
-            "Scrambled Eggs 500 g pack": "Frozen Food",
-            "Bread Pizza Base : Thin Pizza Crust Plain (10in) 1 each": "Frozen Food",
-            "Cheese Mozzarella : Shredded (AW 2kg) 1 kg": "Frozen Food",
-            "Mackerel : Cooked Miso 105 g": "Frozen Food",
-            "Salmon Trout : Saikyo Grilled 45 g": "Frozen Food",
-            "Eel : Roasted Kabayaki (AW 70-72pc Per Pcs / AW 131-150g Per Pcs) 70 each piece": "Frozen Food",
-            "Ham Pork : Sliced 1 kg": "Frozen Food",
-            "Croissant : Long Butter 30 g": "Frozen Food",
-            "Gyudon : Short Plate No Onion 1 each packet": "Frozen Food",
-            "Chuka Wakame 1 kg": "Frozen Food",
-            "Beans Green / Edamame Edatsuki : Frozen [Japanese] 1 kg": "Frozen Food",
-            "Ajikan Atsuyaki Tamago : Cut (7mm) [Japanese] 500 g": "Frozen Food",
-            "Potato French Fries : Straight Cut Frozen (10mm) 2 kg packet": "Frozen Food",
-            "Penne : Boiled 150 g": "Frozen Food",
-            "Muffin : Banana 12 each pack": "Frozen Food",
-            "Roll : Cinnamon 12 each pack": "Frozen Food",
-            "Vinegar : Sushi Su 300 g bottle": "Frozen Food",
-            "Bamboo Shoot : Seasoned Spicy 1 kg pack": "Frozen Food",
-            "Chicken : Karaage 1 kg": "Frozen Food",
-            "Spinach Leaf : Iqf 1 kg": "Frozen Food",
-            "Cheese : Grated Parmesan Dd 500 g": "Frozen Food",
-            "Corn : Kernel Iqf 1 kg": "Frozen Food",
-            "Plain Soft Roll : FBF (8cm / 35g) 1 each": "Frozen Food",
-            "Artisan Sourdough : PB Boule (800g) 1 each": "Frozen Food",
-            "Cheese Mozzarella : Block DD 1 kg": "Frozen Food",
-            "Chicken Ham : Sliced (40 Pieces Per Kg) 1 kg": "Frozen Food",
-            "Cheese : Block Parmesan DD 1 kg": "Frozen Food",
-            "Cheese : Cheddar Block Red 1 kg": "Frozen Food",
-            "Potato : Mini Hash Brown Chuncky 1 kg": "Frozen Food",
-            "Pizza Pepperoni Slices : Frozen 1 kg": "Frozen Food",
-            "Cheddar Cheese : 24 Slices 500 g pack": "Frozen Food",
-            "Donut : Sugared Original Dots Frozen 49 g": "Frozen Food",
-            "Ring Donut : Strawberry Filled Dots (76g) 36 each carton": "Frozen Food",
-            "Muffin : Banana Chocolate Chips 100 g": "Frozen Food",
-            "Ham Smoked Sliced 1 kg": "Frozen Food",
-            "Donut : Pink Square Dots 64 g piece": "Frozen Food",
-            "Spaghetti Noodle : Boiled (100g) 18 each pack": "Frozen Food",
-            "Chicken Breast : Smoked 1 kg": "Frozen Food",
-            "Daifuku : Matcha 35 g": "Frozen Food",
-
-    / ---  Stationary ---
-            "Cutter": "Stationary",
-            "Eraser : {Zeh03}": "Stationary",
-            "Cutter Blades : 45 Degrees (18mm / Size L) 1 each": "Stationary",
-            "Book : 70g Hard Cover 100 each book": "Stationary",
-            "Notebook : 70g Hard Cover 100 sheet book": "Stationary",
-            "Document Tray : 1 Tier Blue": "Stationary",
-            "Paper Clips : 32mm 300 each box": "Stationary",
-            "Clip : Black No.113 (15mm) 12 each packet": "Stationary",
-            "Double Clip : (25mm) 12 each packet": "Stationary",
-            "Double Clip : Black (50mm) 12 each box": "Stationary",
-            "Packing Tape : Opp Brown (38 Micron / 2inx100yd)": "Stationary",
-            "Rope : Twist Red And White 1 each roll": "Stationary",
-            "Glue Stick 21gm 189 1 each": "Stationary",
-            "Tissue Tape : Double Sided (24mm) 20 Yd Roll 20 yard roll": "Stationary",
-            "Tape : Transparent Clear Opp (2in X 45yd)": "Stationary",
-            "Double Sided Tape : Roll Extreme (12mm X 2.5m)": "Stationary",
-            "Marker : Twin Heads Red Permanent (2mm / 3.5mm)": "Stationary",
-            "Marker : Twin Heads Blue Permanent (2mm / 3.5mm)": "Stationary",
-            "Hanging File : F4 Green 10 each packet": "Stationary",
-            "Stapler : Max 35-1m Staples 26/6 1000 each box": "Stationary",
-            "Staplers : Bullet 1000 each box": "Stationary",
-            "Transparent Envelope : A4 (0.09mm) {Code 6100160} 10 each pack": "Stationary",
-            "View Binder : 3 Rings A4 Orange 20 Per Book {Code 6004043}": "Stationary",
-            "Envelope : Brown Kaft Open End (9x12.75in) 1 each": "Stationary",
-            "Ruler : Plastic (12in)": "Stationary",
-            "Pencil : 2b 12 each box": "Stationary",
-            "Paper Roll : Thermal (80x80mm) 1 each roll": "Stationary",
-            "Tape Dispenser : (Core 2in) {Tds-401}": "Stationary",
-            "Tape : Transparent Pack 4 +1 (3/4in Core 1in){600} 25 yard roll": "Stationary",
-            "Folder : A4 Plastic White 12 each packet": "Stationary",
-            "Folder : 2100f Black Color (3in)": "Stationary",
-            "Paper Note Pad : (3x3in) 6 each pack": "Stationary",
-            "Copy Paper : A5 70g White 500 sheet ream": "Stationary",
-            "Pen : Blue 1 each": "Stationary",
-            "Paper Roll : Thermal White 2 Ply Carbonless (75x75mm) 1 each": "Stationary",
-            "Battery : AA 1.5V Alkaline 1 each": "Stationary",
-            "Battery : AAA 1.5V Alkaline 1 each": "Stationary",
-            "Correction Tape : (0.5x6m) [Japanese] 1 each": "Stationary",
-            "File Stand : Metal Suspension Silver": "Stationary",
-            "Bill Holder / Rack : (8in)": "Stationary",
-            "Laminating Film : (216x303mm) 100 sheet pack": "Stationary",
-            "Copy Paper : A3 70g White 500 sheet ream": "Stationary",
-            "Pencil Sharpener : Assorted Colour 1 each": "Stationary",
-            "Copy Paper : A4 80gsm White 500 sheet ream": "Stationary",
-            "10 Key Tags : Assorted Colours {BN-10}": "Stationary",
-            "Laminate Folder : A4 50 Micron Clear 20 each pack": "Stationary",
-            "Box : Drop Keycard Clear (9x12.8x9.75cm)": "Stationary",
-
-    // --- Boutique shop/Merchandise ---
-    "Cap : White Logo 2 Point Front And Back": "Boutique shop/Merchandise",
-    "Koko Pants : For Kids 2 Pocket Gathered Leg Italian Silk": "Boutique shop/Merchandise",
-
-    // --- Printing & Signage ---
-    "Key Card Holder : 250g Paper Art Card Print 1 Side": "Printing & Signage",
-    "Door Hanger : Do Not Disturb / Make Up Room Plastic White": "Printing & Signage"
+    "Oyako Don : (110g) {K-20030406 } 20 each pack": "Frozen Food",
+    "Curry Massaman : Chicken Frozen 1 kg": "Frozen Food",
+    "Spaghetti Noodle : Boil 54 each pack": "Frozen Food",
+    "Shower Cap : Cornstarch (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
+    "Toilet Tissue : White 2 Ply 14 m roll": "Cleaning Supply",
+    "Hand Towel M-Fold : 1 Ply Airflex (24x23cm) 250 sheet": "Cleaning Supply",
+    "Dental Kits : Wheatstraw Toothbrush + (3g) Kraft Toothpaste (17cm) (Cotton Paper Sachet : Brown)": "Dry & Liquid Amenity",
+    "Tomato Ketchup 300 ml bottle": "Dry Food",
+    "Oil Palm 18 lt": "Dry Food",
+    "Copy Paper : A4 80gsm White": "Stationary",
+    "Sanitary Bag : Without Logo Without Packaging Generic Bag White": "Dry & Liquid Amenity"
+    // (ระบบจะรองรับการเพิ่มรายการอื่นๆ ได้ไม่จำกัด)
 };
 
-// ==========================================
-// 2. RULES: KEYWORD MATCHING (กรณีไม่เจอใน Master)
-// ==========================================
+// 2. กฎการกรองด้วย Keyword (สำหรับสินค้าที่ไม่มีใน Master Data)
 const categoryRules = [
-    { name: "Dry & Liquid Amenity", keywords: ["toothbrush", "dental kit", "shower cap", "slippers", "cotton pads", "cotton buds", "shampoo", "shower gel", "handwash", "sanitary bag"] },
-    { name: "Cleaning Supply", keywords: ["garbage", "tissue", "towel", "dishwashing", "bleach", "cleaner", "cloth", "sponge", "scotch brite"] },
-    { name: "Stationary", keywords: ["paper", "pen", "pencil", "tape", "folder", "clip", "stapler", "envelope", "cutter", "battery"] },
-    { name: "Take Away", keywords: ["cup sauce", "food box", "dipping sauce", "spoon-fork set", "compartments", "built-in lid", "take away"] },
-    { name: "Kitchen Supply", keywords: ["bowl", "plate", "spoon", "fork", "bag", "gloves", "napkin", "straw", "film", "pizza", "glass", "ceramic"] },
-    { name: "Amenity special & Snack Harvest", keywords: ["gummy", "jelly", "lipstick", "bubble gum", "candy", "lollipops", "wet tissue"] },
-    { name: "Dry Food", keywords: ["sauce", "shoyu", "oil", "salt", "tea", "coffee", "jam", "syrup", "rice", "pasta", "honey", "miso"] },
-    { name: "Uniform", keywords: ["polo", "shirt", "apron", "koko star", "dress", "uniform", "chef", "home maker"] },
-    { name: "Boutique shop/Merchandise", keywords: ["merchandise", "koko pants", "koko friends", "tumbler", "mug", "cap", "pillow"] },
-    { name: "Printing & Signage", keywords: ["card holder", "keycard", "sticker", "signage", "welcome card", "door hanger"] },
-    { name: "Frozen Food", keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori"] }
+    { 
+        name: "Dry & Liquid Amenity", 
+        keywords: ["shower cap", "dental kit", "toothbrush", "shampoo", "soap bar", "amenity", "slippers"] 
+    },
+    { 
+        name: "Cleaning Supply", 
+        keywords: ["tissue", "toilet paper", "hand towel", "m-fold", "garbage bag", "cleaner", "haiter", "detergent"] 
+    },
+    { 
+        name: "Frozen Food", 
+        keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti"] 
+    },
+    { 
+        name: "Dry Food", 
+        keywords: ["mama", "instant noodle", "shoyu", "oil", "rice", "salt", "sugar", "sauce", "ketchup"] 
+    },
+    { 
+        name: "Stationary", 
+        keywords: ["paper a4", "pen", "pencil", "stapler", "tape", "folder"] 
+    }
 ];
 
-// ==========================================
-// 3. FUNCTION: การจัดหมวดหมู่หลัก
-// ==========================================
+// 3. ฟังก์ชันการกรองระดับ Ultimate
 function getCategory(description) {
     if (!description) return "3rd Party";
+    
     const fullDesc = description.trim();
     const lowerDesc = fullDesc.toLowerCase();
 
-    // ลำดับ 1: เช็ค Master Data (แม่นยำที่สุด)
+    // --- STEP 1: เช็คชื่อเต็ม (Exact Match) ---
     if (masterData2026[fullDesc]) {
         return masterData2026[fullDesc];
     }
 
-    // ลำดับ 2: เช็ค Keyword
+    // --- STEP 2: เช็ค Keyword (Priority Logic) ---
     for (const rule of categoryRules) {
         if (rule.keywords.some(k => lowerDesc.includes(k.toLowerCase()))) {
             return rule.name;
         }
     }
 
-    // ลำดับ 3: ถ้าไม่เจอเลย
+    // --- STEP 3: ถ้าไม่เจอเลย ให้เป็น 3rd Party ---
     return "3rd Party";
 }
+// ฟังก์ชันดึงหมวดหมู่ที่ใช้ระบบ Priority
+function getCategory(description) {
+    if (!description) return "Others";
+    const desc = description.toLowerCase();
+
+    // วนเช็คตามลำดับความสำคัญ (ยึดตามหมวดหมู่ในไฟล์ catagory2026)
+    for (const rule of categoryRules) {
+        if (rule.keywords.some(k => desc.includes(k.toLowerCase()))) {
+            return rule.name;
+        }
+    }
+    return "Others";
+}
+
+        function getCategory(description) {
+            if (!description) return "Others";
+            const desc = description.toLowerCase();
+            const frozenKeywords = categoryRules.find(r => r.name === "Frozen Food").keywords;
+            if (frozenKeywords.some(k => desc.includes(k.toLowerCase()))) return "Frozen Food";
+            const dryKeywords = categoryRules.find(r => r.name === "Dry Food").keywords;
+            if (dryKeywords.some(k => desc.includes(k.toLowerCase()))) return "Dry Food";
+            for (const rule of categoryRules) {
+                if (rule.name === "Frozen Food" || rule.name === "Dry Food") continue;
+                if (rule.keywords.some(k => desc.includes(k.toLowerCase()))) return rule.name;
+            }
+            return "Others";
+        }
+
         function parseDate(str) {
             if (!str) return null;
             const cleanStr = str.trim();
@@ -616,105 +336,37 @@ function getCategory(description) {
             return null;
         }
 
-       // ==========================================
-// 1. ฟังก์ชันหลักสำหรับอัปโหลดและประมวลผลไฟล์ CSV
-// ==========================================
-function handleFileUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // แสดงสถานะการโหลด
-    const statusBadge = document.getElementById('statusBadge');
-    if (statusBadge) statusBadge.classList.remove('hidden');
-
-    Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-            const branches = new Set();
-            let minDate = null, maxDate = null;
-
-            // ประมวลผลข้อมูลทีละแถว
-            allData = results.data.filter(row => Object.values(row).some(v => v)).map(row => {
-                
-                // --- A. ดึงวันที่ (รองรับหัวตารางหลายแบบ) ---
-                const dateStr = row['Invoice Date'] || row['Exp/ Date'] || row['วันที่'] || row['Date'] || '';
-                const dateObj = parseDate(dateStr);
-
-                // --- B. ดึงชื่อสินค้า (หัวใจสำคัญสำหรับการจัดหมวด) ---
-                const itemNameFromCSV = (row['Description'] || row['description'] || row['รายการ'] || row['Item Name'] || row['Product'] || '').trim();
-
-                // --- C. ดึงสาขาและข้อมูลตัวเลข (ลบคอมม่าออก) ---
-                const branch = row['Company'] || row['company'] || row['ชื่อซัพพลายเออร์'] || row['Branch'] || 'Unknown';
-                const cleanNum = (val) => String(val || '0').replace(/[", ]/g, '');
-                const total = parseFloat(cleanNum(row['Total'] || row['total'] || row['ยอดรวม'] || row['Amount'])) || 0;
-                const qty = parseFloat(cleanNum(row['Qty'] || row['qty'] || row['จำนวน'] || row['Quantity'])) || 0;
-
-                // อัปเดตช่วงวันที่และรายชื่อสาขา
-                if (dateObj && !isNaN(dateObj.getTime())) {
-                    if (!minDate || dateObj < minDate) minDate = dateObj;
-                    if (!maxDate || dateObj > maxDate) maxDate = dateObj;
-                }
-                branches.add(branch);
-
-                // --- D. ระบบจัดหมวดหมู่แบบละเอียด (Double Check Logic) ---
-                let finalCategory = "3rd Party"; // ค่าเริ่มต้นหากไม่พบหมวด
-
-                // ชั้นที่ 1: ตรวจสอบชื่อตรงเป๊ะจาก Master Data ที่คุณพิมพ์เอง
-                if (masterData2026 && masterData2026[itemNameFromCSV]) {
-                    finalCategory = masterData2026[itemNameFromCSV];
-                } 
-                // ชั้นที่ 2: หากไม่ตรงเป๊ะ ให้ระบบ "เดา" จาก Keywords ใน categoryRules
-                else if (typeof categoryRules !== 'undefined') {
-                    const lowerItem = itemNameFromCSV.toLowerCase();
-                    for (const rule of categoryRules) {
-                        if (rule.keywords.some(k => lowerItem.includes(k.toLowerCase()))) {
-                            finalCategory = rule.name;
-                            break; 
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    const branches = new Set();
+                    let minDate = null, maxDate = null;
+                    allData = results.data.map(row => {
+                        const dateStr = row['Invoice Date'] || row['Exp/ Date'] || row['วันที่'] || '';
+                        const dateObj = parseDate(dateStr);
+                        const desc = row.Description || row.description || row.product || '';
+                        const branch = row.Company || row.company || row['ชื่อซัพพลายเออร์'] || 'Unknown';
+                        const total = parseFloat(String(row.Total || row.total || '0').replace(/,/g, '')) || 0;
+                        const qty = parseFloat(String(row.Qty || row.qty || '0').replace(/,/g, '')) || 0;
+                        branches.add(branch);
+                        if (dateObj) {
+                            if (!minDate || dateObj < minDate) minDate = dateObj;
+                            if (!maxDate || dateObj > maxDate) maxDate = dateObj;
                         }
-                    }
+                        return { ...row, _dateObj: dateObj, _category: getCategory(desc), _branch: branch, _total: total, _qty: qty };
+                    });
+                    if (minDate) document.getElementById('startDate').value = minDate.toISOString().split('T')[0];
+                    if (maxDate) document.getElementById('endDate').value = maxDate.toISOString().split('T')[0];
+                    updateBranchList(Array.from(branches));
+                    document.getElementById('statusBadge').classList.remove('hidden');
+                    applyFilters();
                 }
-
-                return { 
-                    ...row, 
-                    _dateObj: dateObj, 
-                    _category: finalCategory, 
-                    _branch: branch, 
-                    _total: total, 
-                    _qty: qty 
-                };
             });
-
-            // อัปเดตค่าวันที่ในหน้า UI
-            const startDateInput = document.getElementById('startDate');
-            const endDateInput = document.getElementById('endDate');
-            if (minDate && startDateInput) startDateInput.value = minDate.toISOString().split('T')[0];
-            if (maxDate && endDateInput) endDateInput.value = maxDate.toISOString().split('T')[0];
-            
-            // สั่งอัปเดต Dropdown และวาดกราฟใหม่
-            if (typeof updateBranchList === 'function') updateBranchList(Array.from(branches));
-            if (typeof applyFilters === 'function') applyFilters();
         }
-    });
-}
-
-// ==========================================
-// 2. ฟังก์ชันเสริมสำหรับการทำงาน (ควรมีไว้คู่กัน)
-// ==========================================
-function parseDate(str) {
-    if (!str) return null;
-    const cleanStr = String(str).trim();
-    const parts = cleanStr.split(/[-/ ]/);
-    if (parts.length >= 3) {
-        let d = parseInt(parts[0]);
-        let m = isNaN(parts[1]) ? new Date(parts[1] + " 1, 2020").getMonth() : parseInt(parts[1]) - 1;
-        let y = parseInt(parts[2]);
-        if (y < 100) y += 2000;
-        if (y > 2500) y -= 543; // แปลง พ.ศ. เป็น ค.ศ.
-        return new Date(y, m, d);
-    }
-    return new Date(cleanStr);
-}
 
         function updateBranchList(branches) {
             const select = document.getElementById('filterBranch');
@@ -772,7 +424,7 @@ function parseDate(str) {
             const compStats = {};
             const productStats = {};
             const monthlyStats = {};
-            const branchUsageStats = {}; 
+            const branchUsageStats = {}; // สำหรับกราฟแยกสาขา
 
             activeData.forEach(row => {
                 const valMetric = currentMetric === 'finance' ? row._total : row._qty;
@@ -782,6 +434,7 @@ function parseDate(str) {
                 catStats[row._category] = (catStats[row._category] || 0) + valMetric;
                 compStats[row._branch] = (compStats[row._branch] || 0) + valMetric;
                 
+                // เก็บสถิติแยกสาขาสำหรับกราฟใหม่
                 branchUsageStats[row._branch] = (branchUsageStats[row._branch] || 0) + valMetric;
 
                 const p = row.Description || row.description || row.product || 'Unknown';
@@ -803,6 +456,7 @@ function parseDate(str) {
             renderTop10Bar(productStats);
             renderTrendChart(monthlyStats);
             
+            // วาดกราฟ Usage by Branch
             renderBranchUsageChart(branchUsageStats);
             
             lucide.createIcons();
@@ -974,8 +628,6 @@ function parseDate(str) {
     </script>
 </body>
 </html>
-
-
 
 
 
