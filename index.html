@@ -107,6 +107,7 @@
                         <option value="Dry & Liquid Amenity">Dry & Liquid Amenity</option>
                         <option value="Uniform">Uniform</option>
                         <option value="Boutique shop/Merchandise">Boutique/Merchandise</option>
+                        <option value="Stationary">Stationary</option>
                         <option value="Others">Others</option>
                     </select>
                 </div>
@@ -229,6 +230,10 @@
 
         // 1. กฎการกรองด้วย Keyword (Priority Logic)
 const categoryRules = [
+    { 
+        name: "Uniform", 
+        keywords: ["polo", "shirt", "t-shirt", "jacket", "apron", "trousers", "uniform"] 
+    },
     { 
         name: "Dry & Liquid Amenity", 
         keywords: ["shower cap", "dental kit", "toothbrush", "shampoo", "soap bar", "amenity", "slippers"] 
@@ -239,11 +244,11 @@ const categoryRules = [
     },
     { 
         name: "Frozen Food", 
-        keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti"] 
+        keywords: ["frozen", "meat ball", "saba", "salmon", "gyoza", "yakitori", "noodle set", "spaghetti", "Scram", "eeg","Curry"] 
     },
     { 
         name: "Dry Food", 
-        keywords: ["mama", "instant noodle", "shoyu", "oil", "rice", "salt", "sugar", "sauce", "ketchup"] 
+        keywords: ["mama", "instant noodle", "shoyu", "oil", "rice", "salt", "sugar", "sauce", "ketchup","Kewpie"] 
     },
     { 
         name: "Stationary", 
@@ -577,6 +582,7 @@ function getCategory(description) {
     </script>
 </body>
 </html>
+
 
 
 
