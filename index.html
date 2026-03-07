@@ -221,109 +221,13 @@
     </main>
 
     <script>
-        <script>
-// วางต่อจากบรรทัด <script> ได้เลย
-const categoryRules = [
-    { name: "Frozen Food", keywords: ["Frozen", "Meat Ball", "Chicken", "Saba", "Salmon", "Egg", "Sausage", "Gyoza", "แช่แข็ง", "ลูกชิ้น"] },
-    { name: "Dry Food", keywords: ["Oil", "Sauce", "Ketchup", "Salt", "Sugar", "Rice", "Honey", "Dressing", "Mayonnaise", "Soy"] },
-    { name: "Kitchen Supply", keywords: ["Glass", "Plate", "Bowl", "Mug", "Dish", "Fork", "Spoon", "Pizza", "Wrapping", "Film", "Machine"] },
-    { name: "Cleaning Supply", keywords: ["Tissue", "Towel", "Cleaner", "Bleach", "Detergent", "Mop", "Broom"] },
-    { name: "Dry & Liquid Amenity", keywords: ["Amenity", "Shampoo", "Soap", "Slipper", "Dental", "Toothbrush", "Shower Cap", "Sanitary Bag"] },
-    { name: "Stationary", keywords: ["Paper", "Pen", "Tape", "Ink", "A4", "Folder", "Clip"] }
-];
+        let allData = [];
+        let activeData = [];
+        let currentMetric = 'finance'; 
+        let charts = { catPie: null, compPie: null, topBar: null, trendLine: null, branchBar: null };
+        let deliveryCharts = null;
 
-// ... โค้ดส่วนอื่นๆ ...
-
-  // 1. กำหนดกฎการแยกหมวดหมู่ด้วย Keywords (ใส่แค่คำสั้นๆ ที่เป็นหัวใจของหมวดนั้น)
-const categoryRules = [
-    { 
-        name: "Frozen Food", 
-        keywords: ["Frozen", "Meat Ball", "Chicken", "Saba", "Salmon", "Egg", "Sausage", "Gyoza", "แช่แข็ง", "ลูกชิ้น"] 
-    },
-    { 
-        name: "Dry Food", 
-        keywords: ["Oil", "Sauce", "Ketchup", "Salt", "Sugar", "Rice", "Honey", "Dressing", "Mayonnaise", "Soy"] 
-    },
-    { 
-        name: "Kitchen Supply", 
-        keywords: ["Glass", "Plate", "Bowl", "Mug", "Dish", "Fork", "Spoon", "Pizza", "Wrapping", "Film", "Machine"] 
-    },
-    { 
-        name: "Cleaning Supply", 
-        keywords: ["Tissue", "Towel", "Cleaner", "Bleach", "Detergent", "Mop", "Broom"] 
-    },
-    { 
-        name: "Dry & Liquid Amenity", 
-        keywords: ["Amenity", "Shampoo", "Soap", "Slipper", "Dental", "Toothbrush", "Shower Cap", "Sanitary Bag"] 
-    },
-    { 
-        name: "Stationary", 
-        keywords: ["Paper", "Pen", "Tape", "Ink", "A4", "Folder", "Clip"] 
-    }
-];
-
-// 2. ปรับปรุงฟังก์ชัน handleFileUpload ให้ใช้ Keyword Matching เป็นหลัก
-function handleFileUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-            allData = results.data.filter(row => Object.values(row).some(v => v)).map(row => {
-                
-                // ดึงชื่อสินค้า
-                const itemName = (row['Description'] || row['รายการ'] || '').trim();
-                const lowerItem = itemName.toLowerCase();
-
-                // --- ส่วนที่เปลี่ยนใหม่: ใช้ Keyword วนลูปเช็คเลย ---
-                let finalCategory = "3rd Party"; // ถ้าไม่เจอคำที่กำหนด จะลงหมวดนี้
-                
-                for (const rule of categoryRules) {
-                    // เช็คว่าในชื่อสินค้า มี Keyword คำไหนอยู่ในลิสต์บ้าง
-                    if (rule.keywords.some(k => lowerItem.includes(k.toLowerCase()))) {
-                        finalCategory = rule.name;
-                        break; // เจอหมวดแล้วให้หยุดลูปทันที
-                    }
-                }
-
-                // จัดการตัวเลข (ลบคอมม่า)
-                const cleanNum = (val) => String(val || '0').replace(/[", ]/g, '');
-                const total = parseFloat(cleanNum(row['Total'] || row['ยอดรวม'] || '0')) || 0;
-
-                return { 
-                    ...row, 
-                    _category: finalCategory, 
-                    _total: total,
-                    _dateObj: parseDate(row['Invoice Date'] || row['วันที่'] || '') 
-                };
-            });
-
-            // สั่งอัปเดต Dashboard ทันที
-            applyFilters(); 
-        }
-    });
-}
-// เพิ่ม Keywords เพื่อดักจับสินค้าตัวอื่นๆ (ช่วยลด 3rd Party)
-const categoryRules = [
-   const categoryRules = [
-    { name: "Take Away", keywords: ["cup", "lid", "sauce cup", "chopsticks", "food box", "bowl", "take away"] },
-    { name: "Stationary", keywords: ["paper", "cutter", "eraser", "book", "notebook", "clips", "tape", "glue", "marker", "battery", "thermal"] },
-    { name: "Cleaning Supply", keywords: ["garbage", "towel", "tissue", "dishwashing", "bleach", "cleaner", "microfiber", "sponge", "scotch brite"] },
-    { name: "Dry & Liquid Amenity", keywords: ["sanitary bag", "shower cap", "slippers", "dental kit", "shampoo", "gel", "handwash"] },
-    { name: "Guest Supplies set in Room", keywords: ["mug porcelain", "bottle blue", "tray bamboo", "guest supply"] },
-    { name: "Kitchen Supply", keywords: ["pizza box", "wrapping film", "napkin", "gloves", "plate", "fork", "spoon", "bingsu", "straw"] },
-    { name: "Dry Food", keywords: ["ketchup", "salt", "oil", "sauce", "tea", "coffee", "jam", "syrup", "rice", "honey"] },
-    { name: "Frozen Food", keywords: ["frozen", "meat ball", "curry", "sausage", "saba", "chicken", "gyoza", "cheese", "donut", "muffin", "ham"] },
-    { name: "Amenity special & Snack Harvest", keywords: ["gummy", "jelly", "lipstick", "bubble gum", "candy", "lollipop", "snack"] },
-    { name: "Uniform", keywords: ["polo", "shirt", "apron", "koko star", "uniform"] },
-    { name: "Printing & Signage", keywords: ["sign", "banner", "sticker", "poster", "printing"] }
-];
-    // (ระบบจะรองรับการเพิ่มรายการอื่นๆ ได้ไม่จำกัด)
-};
-
-// 2. กฎการกรองด้วย Keyword (สำหรับสินค้าที่ไม่มีใน Master Data)
+      // 1. กฎการกรองด้วย Keyword (Priority Logic)
 const categoryRules = [
     { 
         name: "Dry & Liquid Amenity", 
@@ -347,55 +251,21 @@ const categoryRules = [
     }
 ];
 
-// 3. ฟังก์ชันการกรองระดับ Ultimate
+// 2. ฟังก์ชันดึงหมวดหมู่ (ใช้ระบบ Priority Keywords)
 function getCategory(description) {
-    if (!description) return "3rd Party";
+    if (!description) return "Others";
     
-    const fullDesc = description.trim();
-    const lowerDesc = fullDesc.toLowerCase();
+    const lowerDesc = description.toLowerCase();
 
-    // --- STEP 1: เช็คชื่อเต็ม (Exact Match) ---
-    if (masterData2026[fullDesc]) {
-        return masterData2026[fullDesc];
-    }
-
-    // --- STEP 2: เช็ค Keyword (Priority Logic) ---
+    // วนเช็คตามลำดับความสำคัญใน categoryRules
     for (const rule of categoryRules) {
         if (rule.keywords.some(k => lowerDesc.includes(k.toLowerCase()))) {
             return rule.name;
         }
     }
 
-    // --- STEP 3: ถ้าไม่เจอเลย ให้เป็น 3rd Party ---
-    return "3rd Party";
-}
-// ฟังก์ชันดึงหมวดหมู่ที่ใช้ระบบ Priority
-function getCategory(description) {
-    if (!description) return "Others";
-    const desc = description.toLowerCase();
-
-    // วนเช็คตามลำดับความสำคัญ (ยึดตามหมวดหมู่ในไฟล์ catagory2026)
-    for (const rule of categoryRules) {
-        if (rule.keywords.some(k => desc.includes(k.toLowerCase()))) {
-            return rule.name;
-        }
-    }
     return "Others";
 }
-
-        function getCategory(description) {
-            if (!description) return "Others";
-            const desc = description.toLowerCase();
-            const frozenKeywords = categoryRules.find(r => r.name === "Frozen Food").keywords;
-            if (frozenKeywords.some(k => desc.includes(k.toLowerCase()))) return "Frozen Food";
-            const dryKeywords = categoryRules.find(r => r.name === "Dry Food").keywords;
-            if (dryKeywords.some(k => desc.includes(k.toLowerCase()))) return "Dry Food";
-            for (const rule of categoryRules) {
-                if (rule.name === "Frozen Food" || rule.name === "Dry Food") continue;
-                if (rule.keywords.some(k => desc.includes(k.toLowerCase()))) return rule.name;
-            }
-            return "Others";
-        }
 
         function parseDate(str) {
             if (!str) return null;
@@ -416,68 +286,36 @@ function getCategory(description) {
         }
 
         function handleFileUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-            const branches = new Set();
-            let minDate = null, maxDate = null;
-
-            allData = results.data.filter(row => Object.values(row).some(v => v)).map(row => {
-                // 1. ดึงชื่อสินค้า (รองรับหัวตารางหลายแบบ)
-                const itemName = (row['Description'] || row['description'] || row['รายการ'] || row['Item Name'] || '').trim();
-                const lowerItem = itemName.toLowerCase();
-
-                // 2. ระบบจัดหมวดหมู่ด้วย Keywords (แทนที่ Master Data เดิม)
-                let finalCategory = "3rd Party"; 
-                for (const rule of categoryRules) {
-                    if (rule.keywords.some(k => lowerItem.includes(k.toLowerCase()))) {
-                        finalCategory = rule.name;
-                        break; 
-                    }
+            const file = event.target.files[0];
+            if (!file) return;
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    const branches = new Set();
+                    let minDate = null, maxDate = null;
+                    allData = results.data.map(row => {
+                        const dateStr = row['Invoice Date'] || row['Exp/ Date'] || row['วันที่'] || '';
+                        const dateObj = parseDate(dateStr);
+                        const desc = row.Description || row.description || row.product || '';
+                        const branch = row.Company || row.company || row['ชื่อซัพพลายเออร์'] || 'Unknown';
+                        const total = parseFloat(String(row.Total || row.total || '0').replace(/,/g, '')) || 0;
+                        const qty = parseFloat(String(row.Qty || row.qty || '0').replace(/,/g, '')) || 0;
+                        branches.add(branch);
+                        if (dateObj) {
+                            if (!minDate || dateObj < minDate) minDate = dateObj;
+                            if (!maxDate || dateObj > maxDate) maxDate = dateObj;
+                        }
+                        return { ...row, _dateObj: dateObj, _category: getCategory(desc), _branch: branch, _total: total, _qty: qty };
+                    });
+                    if (minDate) document.getElementById('startDate').value = minDate.toISOString().split('T')[0];
+                    if (maxDate) document.getElementById('endDate').value = maxDate.toISOString().split('T')[0];
+                    updateBranchList(Array.from(branches));
+                    document.getElementById('statusBadge').classList.remove('hidden');
+                    applyFilters();
                 }
-
-                // 3. จัดการตัวเลข (ลบคอมม่าเพื่อให้คำนวณได้)
-                const cleanNum = (val) => String(val || '0').replace(/[", ]/g, '');
-                const total = parseFloat(cleanNum(row['Total'] || row['ยอดรวม'] || row['Amount'])) || 0;
-                const qty = parseFloat(cleanNum(row['Qty'] || row['จำนวน'] || row['Quantity'])) || 0;
-
-                // 4. จัดการวันที่และสาขา
-                const branch = row['Company'] || row['ชื่อซัพพลายเออร์'] || row['Branch'] || 'Unknown';
-                const dateObj = parseDate(row['Invoice Date'] || row['วันที่'] || row['Date'] || '');
-
-                if (dateObj && !isNaN(dateObj.getTime())) {
-                    if (!minDate || dateObj < minDate) minDate = dateObj;
-                    if (!maxDate || dateObj > maxDate) maxDate = dateObj;
-                }
-                branches.add(branch);
-
-                return { 
-                    ...row, 
-                    _category: finalCategory, 
-                    _total: total,
-                    _qty: qty,
-                    _branch: branch,
-                    _dateObj: dateObj 
-                };
             });
-
-            // อัปเดต UI และวาดกราฟ
-            if (minDate) document.getElementById('startDate').value = minDate.toISOString().split('T')[0];
-            if (maxDate) document.getElementById('endDate').value = maxDate.toISOString().split('T')[0];
-            
-            updateBranchList(Array.from(branches));
-            
-            // บรรทัดนี้สำคัญที่สุด: สั่งให้กราฟแสดงผลทันที
-            applyFilters(); 
-
-            document.getElementById('statusBadge').classList.remove('hidden');
         }
-    });
-}
 
         function updateBranchList(branches) {
             const select = document.getElementById('filterBranch');
@@ -739,9 +577,6 @@ function getCategory(description) {
     </script>
 </body>
 </html>
-
-
-
 
 
 
