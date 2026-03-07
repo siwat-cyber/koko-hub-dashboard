@@ -110,6 +110,7 @@
                         <option value="Stationary">Stationary</option>
                         <option value="Amenity special & Snack Harvest">Amenity special & Snack Harvest</option>
                          <option value="Printing & Signage">Printing & Signage</option>
+                         <option value="Take Away">Take Away</option>
                         <option value="Others">Others</option>
                     </select>
                 </div>
@@ -233,8 +234,12 @@
         // 1. กฎการกรองด้วย Keyword (Priority Logic)
 const categoryRules = [
     { 
+       name: "Take Away", 
+        keywords: ["cup", "lid", "sauce cup", "chopsticks", "food box", "bowl", "take away", "แก้ว", "ฝา", "ตะเกียบ","glass : pet"] 
+    }, 
+    { 
        name: "Printing & Signage", 
-        keywords: ["keycard","DND", "sign","lugg","card","name tag"] 
+        keywords: ["keycard","Door hanger", "sign","lugg","card","name tag"] 
     }, 
     { 
        name: "Amenity special & Snack Harvest", 
@@ -242,7 +247,7 @@ const categoryRules = [
     },
     { 
        name: "Boutique shop/Merchandise", 
-        keywords: ["koko pants", "cap", "T-Shirt : Cotton 100% ", "bag", "souvenir","pillow","Doll","Coin Case ","Polo Shirt 1 Logo","Roll up"] 
+        keywords: ["koko pants", "cap", "T-Shirt : Cotton 100% ", "bag", "souvenir","pillow","Doll","Coin Case ","Polo Shirt 1 Logo","Roll up","kokotel mug"] 
     },
     { 
         name: "Uniform",
@@ -264,7 +269,7 @@ const categoryRules = [
     { 
         name: "Dry Food", 
         keywords: ["mama", "instant noodle", "shoyu", "oil", "rice", "salt", "sugar", "sauce", "ketchup","Kewpie","Boncafe" ,"Ito En","juice","Kelloggs","Nutella","Honey","milo","ayam","miso soup",
-        "Mccormick","jam","hersheys","UFC","Dilmah","Twinings"] 
+        "Mccormick","jam","hersheys","UFC","Dilmah","Twinings","JIF"] 
     },
     { 
         name: "Stationary", 
@@ -598,6 +603,7 @@ function getCategory(description) {
     </script>
 </body>
 </html>
+
 
 
 
