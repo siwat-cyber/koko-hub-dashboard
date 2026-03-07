@@ -621,62 +621,49 @@ function getCategory(description) {
             return null;
         }
 
-        function handleFileUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-            const branches = new Set();
-            let minDate = null, maxDate = null;
-            
-            allData = results.data.filter(row => Object.values(row).some(v => v)).map(row => {
-                // 1. ดึงวันที่ (รองรับหลายชื่อหัวตาราง)
-                const dateStr = row['Invoice Date'] || row['Exp/ Date'] || row['วันที่'] || row['Date'] || '';
-                const dateObj = parseDate(dateStr);
+       // แก้ไขส่วน .map(row => { ... }) ใน handleFileUpload
+allData = results.data.filter(row => Object.values(row).some(v => v)).map(row => {
+    
+    // --- 1. ดึงข้อมูลพื้นฐานจาก CSV ---
+    const dateStr = row['Invoice Date'] || row['Exp/ Date'] || row['วันที่'] || row['Date'] || '';
+    const dateObj = parseDate(dateStr);
+    
+    // ชื่อสินค้าจากไฟล์ CSV (หัวใจสำคัญ)
+    const itemNameFromCSV = (row['Description'] || row['description'] || row['รายการ'] || row['Item Name'] || '').trim();
+    
+    const branch = row['Company'] || row['company'] || row['ชื่อซัพพลายเออร์'] || 'Unknown';
+    const cleanNum = (val) => String(val || '0').replace(/[", ]/g, '');
+    const total = parseFloat(cleanNum(row['Total'] || row['total'] || row['ยอดรวม'] || '0')) || 0;
+    const qty = parseFloat(cleanNum(row['Qty'] || row['qty'] || row['จำนวน'] || '0')) || 0;
 
-                // 2. ดึงชื่อสินค้า (Description)
-                const desc = row.Description || row.description || row.product || row['รายการ'] || '';
+    // --- 2. ระบบการกรองละเอียด (Double Check Logic) ---
+    let finalCategory = "3rd Party"; // ค่าเริ่มต้น
 
-                // 3. ดึงชื่อบริษัท/ซัพพลายเออร์
-                const branch = row.Company || row.company || row['ชื่อซัพพลายเออร์'] || row['Supplier'] || 'Unknown';
-
-                // 4. แปลงตัวเลข (ลบคอมม่า , และลบเครื่องหมายคำพูด " ออก)
-                const cleanNum = (val) => String(val || '0').replace(/[",]/g, '');
-                const total = parseFloat(cleanNum(row.Total || row.total || row['ยอดรวม'] || '0')) || 0;
-                const qty = parseFloat(cleanNum(row.Qty || row.qty || row['จำนวน'] || '0')) || 0;
-
-                branches.add(branch);
-
-                if (dateObj) {
-                    if (!minDate || dateObj < minDate) minDate = dateObj;
-                    if (!maxDate || dateObj > maxDate) maxDate = dateObj;
-                }
-
-                // *** จุดสำคัญ: ใช้ชื่อฟังก์ชันให้ตรงกับที่คุณมี (ในที่นี้เปลี่ยนเป็น getCategory) ***
-                const finalCategory = typeof getCategory === 'function' ? getCategory(desc) : 
-                                     (typeof assignCategory === 'function' ? assignCategory(desc) : '3rd Party');
-
-                return { 
-                    ...row, 
-                    _dateObj: dateObj, 
-                    _category: finalCategory, 
-                    _branch: branch, 
-                    _total: total, 
-                    _qty: qty 
-                };
-            });
-
-            if (minDate) document.getElementById('startDate').value = minDate.toISOString().split('T')[0];
-            if (maxDate) document.getElementById('endDate').value = maxDate.toISOString().split('T')[0];
-            
-            updateBranchList(Array.from(branches));
-            document.getElementById('statusBadge').classList.remove('hidden');
-            applyFilters();
+    // ขั้นที่ 1: เทียบชื่อตรงๆ กับ Master Data ที่คุณเพิ่มเอง
+    if (masterData2026[itemNameFromCSV]) {
+        finalCategory = masterData2026[itemNameFromCSV];
+    } 
+    // ขั้นที่ 2: ถ้าไม่เจอชื่อตรงเป๊ะ ให้ใช้ระบบ "เดา" จาก Keywords
+    else {
+        const lowerItem = itemNameFromCSV.toLowerCase();
+        for (const rule of categoryRules) {
+            // ถ้าในชื่อสินค้ามีคำสำคัญคำใดคำหนึ่งในหมวดนั้น ให้จัดเข้าหมวดนั้นเลย
+            if (rule.keywords.some(k => lowerItem.includes(k.toLowerCase()))) {
+                finalCategory = rule.name;
+                break; // เจอหมวดที่ใช่แล้วให้หยุดหาต่อ
+            }
         }
-    });
-}
+    }
+
+    return { 
+        ...row, 
+        _dateObj: dateObj, 
+        _category: finalCategory, 
+        _branch: branch, 
+        _total: total, 
+        _qty: qty 
+    };
+});
 
         function updateBranchList(branches) {
             const select = document.getElementById('filterBranch');
@@ -936,6 +923,7 @@ function getCategory(description) {
     </script>
 </body>
 </html>
+
 
 
 
